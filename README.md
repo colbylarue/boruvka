@@ -7,7 +7,7 @@ These instructions assume VS Code is being used.
 
 Assuming git and golang are both installed.
 First clone git repo.
-Navigate to graph directory in command line and install the local graph as a go package
+Navigate to graph directory in command line and install the local graph as a go package (Note: if you make changes to the graph library you may need to do a go install again)
 
 ```bash
 cd wherever

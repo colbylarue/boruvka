@@ -121,7 +121,7 @@ func (g *CGraph) Snapshot() {
 		}
 	}
 	fmt.Println("ContractionsPairsSlice:", ContractionPairsSlice)
-	fmt.Println("#############################################\n")
+	fmt.Println("#############################################")
 }
 
 //Returns a slice representing the min edge for the node
