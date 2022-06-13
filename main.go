@@ -29,9 +29,8 @@ import (
 )
 
 func main() {
-
+	//########## Initialize graph ######################
 	g := new(graph.CGraph)
-
 	//Adding nodes
 	g.AddNode() //first node, 0=A
 	g.AddNode() //node 1=B
@@ -40,9 +39,6 @@ func main() {
 	g.AddNode() //node 4=E
 	g.AddNode() //node 5=F
 	g.AddNode() //node 6=G
-	//fmt.Println("\tOnly nodes, no edges yet:")
-	//fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAll())
-
 	//Adding edges
 	g.AddEdgeBoth(0, 1, 7)  //AB = 7
 	g.AddEdgeBoth(0, 3, 4)  //AD = 4
@@ -55,45 +51,64 @@ func main() {
 	g.AddEdgeBoth(4, 5, 12) //EF = 12
 	g.AddEdgeBoth(4, 6, 8)  //EG = 8
 	g.AddEdgeBoth(5, 6, 13) //FG = 13
+	//########## End initialization ###################
 
-	fmt.Println("\tNodes and edges:")
-	fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAll())
-	fmt.Println("Nr. of one-way edges |E| = ", len(g.EdgesAll()))
+	g.Snapshot()
 
-	fmt.Println("\tEdges from each node:")
-	for _, id := range g.Nodes() {
-		fmt.Println("node ", id, "-->", g.EdgesFromNode(id))
-	}
+	for g.GetNrNodes() > 1 {
+		fmt.Println("#######################################################")
+		fmt.Println("##################### MAIN LOOP #######################")
+		fmt.Println("#######################################################")
+		fmt.Println(g.GetNrNodes(), "nodes in the graph")
+		//Calculating the minimum edges for each node in the graph
+		fmt.Println("\tMin edge for each node:")
+		for _, id := range g.Nodes() {
+			if id[1] < 0 {
+				fmt.Println("Node already contracted:", id[0])
+			} else {
+				g.NodeMinEdgeSet(id[1])
+				edge := g.NodeMinEdgeGet(id[1])
+				fmt.Println("node ", id[1], "--> minEdge:", edge)
+			}
+			//#######To do: If no min edge was found, this means isolated component
+			//#######-----REMOVE FROM THE GRAPH-----
+		}
 
-	//Testing the method Neighbors
-	fmt.Println("\tNeighbors of each node (based on components, not plain edges!):")
-	for _, id := range g.Nodes() {
-		fmt.Println("Neighbors of ", id, ": ", g.Neighbors(id))
-	}
+		//Edge Contraction is a multi-step process. It starts with a first pass
+		//that adds all minEdges to the Tree and fills up ContractionPairsSlice
+		g.BuildContractionPairsSlice()
+		fmt.Println("ContractionPairsSlice:", graph.ContractionPairsSlice)
+		//Testing the tree (map)
+		fmt.Println("\tTree edges:")
+		fmt.Println(graph.Tree)
 
-	//Testing the methods NodeMinEdgeSet and NodeMinEdgeGet
-	fmt.Println("\tMin edge for each node:")
-	for _, id := range g.Nodes() {
-		g.NodeMinEdgeSet(id)
-		edge := g.NodeMinEdgeGet(id)
-		fmt.Println("node ", id, "-->", edge)
-		//#######To do: If no min edge was found, this means isolated component
-		//#######-----REMOVE FROM THE GRAPH-----
-	}
+		//This is a process equivalent to Pointer-jumping. We create a slice
+		//of leaves (terminal nodes) in leafSlice, and contract those
+		for graph.LenContractionPairsSlice() > 0 {
+			//leafSlice has a 3rd position that remembers the pair index from
+			//ContractionsPairsSlice, to allow fast "deletion"
+			leafSlice := make([][3]int, 0)
+			//Use ContractionPairs to find the set (slice) of "leaf" nodes for
+			//contraction: values (children) that are not also keys (parents)
+			for i, v := range graph.ContractionPairsSlice {
+				if graph.ParentNotInSlice(v[1], graph.ContractionPairsSlice) {
+					leafSlice = append(leafSlice, [3]int{v[0], v[1], i})
+				}
+			}
+			fmt.Println("\n############### leafSlice ################\n", leafSlice)
+			//Perform a round of leaf contractions according to leafSlice
+			if len(leafSlice) > 0 {
+				for _, v := range leafSlice {
+					g.EdgeContract(v[0], v[1])
+					fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAllMap())
+					//Delete the pair from ContractionPairs
+					graph.ContractionPairsSlice[v[2]] = [2]int{-1, -1}
+					fmt.Println("Deleted edge", v[0], v[1], "from ContractionPairs:",
+						graph.ContractionPairsSlice)
+					g.Snapshot()
+				}
 
-	//Testing the method EdgeContract
-	fmt.Println("\tEdge contraction:")
-	for _, id := range g.Nodes() {
-		edge := g.NodeMinEdgeGet(id)
-		if edge[0] == -1 {
-			fmt.Println("---No minimum edge!")
-		} else {
-			g.EdgeContract(edge[0], edge[1])
+			}
 		}
 	}
-
-	//Testing the tree (map)
-	fmt.Println("\tTree edges:")
-	fmt.Println(graph.Tree)
-
 }
