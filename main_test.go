@@ -14,7 +14,7 @@ func TestAdd(t *testing.T) {
 		g := new(graph.CGraph)
 		expected := 0
 
-		if 0 != expected {
+		if expected != g.GetNrNodes() {
 			t.Errorf("Expected %d; but got %d", expected, g.GetNrNodes())
 		}
 	})
