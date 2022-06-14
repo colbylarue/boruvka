@@ -5,21 +5,28 @@ package main
 import (
 	"boruvka/graph"
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 )
 
-func main() {
-	// satellite data generated from https://www.celestrak.com/NORAD/elements/table.php?GROUP=active&FORMAT=tle
-	// TODO: need to check copyright or PR
+// satellite data generated from https://www.celestrak.com/NORAD/elements/table.php?GROUP=active&FORMAT=tle
+// TODO: need to check copyright or PR
 
-	//type SatelliteGraph struct
-	// Note the Satellite Graph will have N^2 connections worst cast (technically line of sight narrows it down) (Look at subgraphs)
-	type Satellite struct {
-		Name string
-		Ole1 string
-		Ole2 string
-	}
+//type SatelliteGraph struct
+// Note the Satellite Graph will have N^2 connections worst cast (technically line of sight narrows it down) (Look at subgraphs)
+type Satellite struct {
+	Name string
+	Ole1 string
+	Ole2 string
+}
+
+func (s Satellite) toString() [3]string {
+	return [3]string{s.Name, s.Ole1, s.Ole2}
+}
+
+func main() {
+
 	var satlist = []Satellite{}
 
 	file, err := os.Open("SatDB.txt")
@@ -49,5 +56,8 @@ func main() {
 			sat = Satellite{}
 		}
 		linecounter++
+	}
+	for n := range satlist {
+		fmt.Println(satlist[n].toString())
 	}
 }
