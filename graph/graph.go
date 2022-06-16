@@ -5,10 +5,15 @@ Initial library was this one from github:
 */
 package graph
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"os"
+)
 
 var Tree = make(map[[2]int][3]int) //Holds the tree edges, in the "2-3" format
 var ContractionPairsSlice = make([][2]int, 0)
+var visited = make(map[int]int)
 
 type CGraph struct { //Component Graph
 	nrNodes int
@@ -21,6 +26,77 @@ type CGraphNode struct {
 	//value is array of 2 original nodes (source, dest) plus weight
 	minEdge [5]int //holds min edge for Boruvka alg.
 }
+
+/*
+func traverse(*CGraph) {
+	for node := range adjList {
+		if visited[node] == 1 {
+			continue
+		}
+		if !dfs(node, adjList, &visited) {
+			return false
+		}
+	}
+}
+
+func dfs(node int, adjList map[int][]int, visited *map[int]int) bool {
+
+	neighbourArr, ok := adjList[node]
+	if !ok {
+		return true
+	}
+
+	if (*visited)[node] == -1 {
+		return false
+	}
+
+	if (*visited)[node] == 1 {
+		return true
+	}
+
+	(*visited)[node] = -1
+
+	for _, neighbour := range neighbourArr {
+		if !dfs(neighbour, adjList, visited) {
+			return false
+		}
+	}
+	(*visited)[node] = 1
+	return true
+}
+*/
+/*
+func convert() (*cgraph.Graph, error) {
+	g := graphviz.New()
+	graph, err := g.Graph()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := graph.Close(); err != nil {
+			log.Fatal(err)
+		}
+		g.Close()
+	}()
+	n, err := graph.CreateNode("n")
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := graph.CreateNode("m")
+	if err != nil {
+		log.Fatal(err)
+	}
+	e, err := graph.CreateEdge("e", n, m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	e.SetLabel("e")
+	var buf bytes.Buffer
+	if err := g.Render(graph, "dot", &buf); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(buf.String())
+}*/
 
 func min(a, b int) int {
 	if a < b {
@@ -124,6 +200,49 @@ func (g *CGraph) Snapshot() {
 	fmt.Println("#############################################")
 }
 
+//creates & writes graph to a .dot file
+func (g *CGraph) generateDot() {
+
+	file, err := os.Open("graph.dot")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	len, err := file.WriteString("")
+
+	if err != nil {
+		log.Fatalf("failed writing to file: %s", err)
+	}
+
+	// Name() method returns the name of the
+	// file as presented to Create() method.
+	fmt.Printf("\nFile Name: %s", file.Name())
+	fmt.Printf("\nLength: %d bytes", len)
+
+	fmt.Println("\n#### snapshot ############################### \n\tNodes and edges:")
+	fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAllMap())
+	fmt.Println("Nr. of two-way edges |E| = ", len(g.EdgesAllMap()))
+	fmt.Println("\tEdges from each node:")
+	for _, id := range g.Nodes() {
+		if id[1] < 0 {
+			fmt.Println("Contracted node:", id[0])
+		} else {
+			fmt.Println("node ", id[1], "-->", g.EdgesFromNode(id[1]))
+		}
+	}
+	fmt.Println("\tNeighbors of each node (acc. to components, not plain edges!):")
+	for _, id := range g.Nodes() {
+		if id[1] < 0 {
+			fmt.Println("Contracted node:", id[0])
+		} else {
+			fmt.Println("Neighbors of ", id[1], ": ", g.Neighbors(id[1]))
+		}
+	}
+	fmt.Println("ContractionsPairsSlice:", ContractionPairsSlice)
+	fmt.Println("#############################################")
+}
+
 //Returns a slice representing the min edge for the node
 func (g *CGraph) NodeMinEdgeGet(id int) [5]int {
 	return g.nodes[id].minEdge
@@ -138,6 +257,14 @@ func (g *CGraph) NodeMinEdgeSet(id int) {
 			minE[2] = v[0]
 			minE[3] = v[1]
 			minE[4] = v[2]
+		} else if v[2] == minE[4] { //implement tie-break rule
+			if k[0]+k[1] < minE[0]+minE[1] { //new edge has a smaller node id
+				minE[0] = k[0]
+				minE[1] = k[1]
+				minE[2] = v[0]
+				minE[3] = v[1]
+				minE[4] = v[2]
+			}
 		}
 	}
 	g.nodes[id].minEdge = minE //OK to copy arrays in Go!
