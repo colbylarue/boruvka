@@ -30,6 +30,7 @@ import (
 
 func main() {
 	//########## Initialize graph ######################
+
 	g := new(graph.CGraph)
 	//Adding nodes
 	g.AddNode() //first node, 0=A
