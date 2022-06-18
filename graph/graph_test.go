@@ -1,7 +1,6 @@
-package main
+package graph
 
 import (
-	"boruvka/graph"
 	"testing"
 )
 
@@ -10,8 +9,8 @@ func TestAdd(t *testing.T) {
 	// TODO: add test -> examples in repo below:
 	// https://github.com/networkx/networkx/blob/main/networkx/classes/tests/test_graph.py
 
-	t.Run("Build Graph Test", func(t *testing.T) {
-		g := new(graph.CGraph)
+	t.Run("Empty Graph", func(t *testing.T) {
+		g := new(CGraph)
 		expected := 0
 
 		if expected != g.GetNrNodes() {

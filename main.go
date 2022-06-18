@@ -30,11 +30,11 @@ import (
 	"github.com/tmc/dot"
 )
 
-func main() {
-	//########## Initialize graph ######################
-
+func build_graph() (*graph.CGraph, *dot.Graph) {
 	g := new(graph.CGraph)
 	gdot := dot.NewGraph("Example Graph")
+	gdot.SetType(dot.GRAPH)
+	gdot.Set("layout", "circo")
 	//Adding nodes
 	g.AddNode() //first node, 0=A
 	g.AddNode() //node 1=B
@@ -44,25 +44,18 @@ func main() {
 	g.AddNode() //node 5=F
 	g.AddNode() //node 6=G
 	ndot0 := dot.NewNode("0")
-	ndot0.Set("color", "sienna")
 	gdot.AddNode(ndot0)
 	ndot1 := dot.NewNode("1")
-	ndot1.Set("color", "sienna")
 	gdot.AddNode(ndot1)
 	ndot2 := dot.NewNode("2")
-	ndot2.Set("color", "sienna")
 	gdot.AddNode(ndot2)
 	ndot3 := dot.NewNode("3")
-	ndot3.Set("color", "sienna")
 	gdot.AddNode(ndot3)
 	ndot4 := dot.NewNode("4")
-	ndot4.Set("color", "sienna")
 	gdot.AddNode(ndot4)
 	ndot5 := dot.NewNode("5")
-	ndot5.Set("color", "sienna")
 	gdot.AddNode(ndot5)
 	ndot6 := dot.NewNode("6")
-	ndot6.Set("color", "sienna")
 	gdot.AddNode(ndot6)
 	//Adding edges
 	g.AddEdgeBoth(0, 1, 7)  //AB = 7
@@ -80,49 +73,55 @@ func main() {
 
 	e1 := dot.NewEdge(ndot0, ndot1)
 	e1.Set("weight", "7")
-	e1.Set("dir", "both")
+	e1.Set("label", "7")
 	gdot.AddEdge(e1)
 	e2 := dot.NewEdge(ndot0, ndot3)
 	e2.Set("weight", "4")
-	e2.Set("dir", "both")
+	e2.Set("label", "4")
 	gdot.AddEdge(e2)
 	e3 := dot.NewEdge(ndot1, ndot2)
 	e3.Set("weight", "11")
-	e3.Set("dir", "both")
+	e3.Set("label", "11")
 	gdot.AddEdge(e3)
 	e4 := dot.NewEdge(ndot1, ndot3)
 	e4.Set("weight", "9")
-	e4.Set("dir", "both")
+	e4.Set("label", "9")
 	gdot.AddEdge(e4)
 	e5 := dot.NewEdge(ndot1, ndot4)
 	e5.Set("weight", "10")
-	e5.Set("dir", "both")
+	e5.Set("label", "10")
 	gdot.AddEdge(e5)
 	e6 := dot.NewEdge(ndot2, ndot4)
 	e6.Set("weight", "5")
-	e6.Set("dir", "both")
+	e6.Set("label", "5")
 	gdot.AddEdge(e6)
 	e7 := dot.NewEdge(ndot3, ndot4)
 	e7.Set("weight", "15")
-	e7.Set("dir", "both")
+	e7.Set("label", "15")
 	gdot.AddEdge(e7)
 	e8 := dot.NewEdge(ndot3, ndot5)
 	e8.Set("weight", "6")
-	e8.Set("dir", "both")
+	e8.Set("label", "6")
 	gdot.AddEdge(e8)
 	e9 := dot.NewEdge(ndot4, ndot5)
 	e9.Set("weight", "12")
-	e9.Set("dir", "both")
+	e9.Set("label", "12")
 	gdot.AddEdge(e9)
 	e10 := dot.NewEdge(ndot4, ndot6)
 	e10.Set("weight", "8")
-	e10.Set("dir", "both")
+	e10.Set("label", "8")
 	gdot.AddEdge(e10)
 	e11 := dot.NewEdge(ndot5, ndot6)
 	e11.Set("weight", "13")
-	e11.Set("dir", "both")
+	e11.Set("label", "13")
 	gdot.AddEdge(e11)
 
+	return g, gdot
+}
+
+func main() {
+	//########## Initialize graph ######################
+	g, gdot := build_graph()
 	g.Snapshot()
 
 	for g.GetNrNodes() > 1 {
