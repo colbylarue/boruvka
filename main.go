@@ -32,6 +32,7 @@ import (
 
 func main() {
 	//########## Initialize graph ######################
+
 	g := new(graph.CGraph)
 	gdot := dot.NewGraph("Example Graph")
 	//Adding nodes
