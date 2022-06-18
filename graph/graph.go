@@ -11,7 +11,8 @@ import (
 
 var Tree = make(map[[2]int][3]int) //Holds the tree edges, in the "2-3" format
 var ContractionPairsSlice = make([][2]int, 0)
-var visited = make(map[int]int)
+
+//var visited = make(map[int]int)
 
 type CGraph struct { //Component Graph
 	nrNodes int
