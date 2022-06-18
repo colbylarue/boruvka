@@ -5,7 +5,9 @@ Initial library was this one from github:
 */
 package graph
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var Tree = make(map[[2]int][3]int) //Holds the tree edges, in the "2-3" format
 var ContractionPairsSlice = make([][2]int, 0)
@@ -64,6 +66,8 @@ func (g *CGraph) AddEdgeBoth(n1, n2 int, w int) {
 		g.nodes[n1].edges[[2]int{n2, n1}] = [3]int{n2, n1, w}
 		g.nodes[n2].edges[[2]int{n2, n1}] = [3]int{n2, n1, w}
 	}
+
+	fmt.Println(g)
 }
 
 // Neighbors : returns a slice of node IDs that are linked to this node
@@ -122,6 +126,7 @@ func (g *CGraph) Snapshot() {
 	}
 	fmt.Println("ContractionsPairsSlice:", ContractionPairsSlice)
 	fmt.Println("#############################################")
+	fmt.Println("############## DOT FILE #####################")
 }
 
 //Returns a slice representing the min edge for the node
