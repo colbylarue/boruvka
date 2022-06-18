@@ -88,12 +88,19 @@ func main() {
 			//leafSlice has a 3rd position that remembers the pair index from
 			//ContractionsPairsSlice, to allow fast "deletion"
 			leafSlice := make([][3]int, 0)
-			//Use ContractionPairs to find the set (slice) of "leaf" nodes for
-			//contraction: values (children) that are not also keys (parents)
+			//Use ContractionPairs to find the set (slice) of "leaf" pairs for
+			//contraction: pairs with one node (or both) appearing only once in
+			//ContractionPairsSlice. Unlike ContractionPairsSlice, leafSlice is
+			//ordered: The first node will be contracted in the second.
 			for i, v := range graph.ContractionPairsSlice {
-				if graph.ParentNotInSlice(v[1], graph.ContractionPairsSlice) {
+				fmt.Println("i = ", i, "; v = ", v)
+				//#### Optimization: count v[0] and v[1] in the same loop, then
+				//examine the counters and decide.
+				if graph.OnlyOnceInSlice(v[0], graph.ContractionPairsSlice) {
 					leafSlice = append(leafSlice, [3]int{v[0], v[1], i})
-				}
+				} else if graph.OnlyOnceInSlice(v[1], graph.ContractionPairsSlice) {
+					leafSlice = append(leafSlice, [3]int{v[1], v[0], i})
+				} //else do nothing - if they both appear more than once, it's not a leaf edge
 			}
 			fmt.Println("\n############### leafSlice ################\n", leafSlice)
 			//Perform a round of leaf contractions according to leafSlice
@@ -103,11 +110,7 @@ func main() {
 					fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAllMap())
 					//Delete the pair from ContractionPairs
 					graph.ContractionPairsSlice[v[2]] = [2]int{-1, -1}
-					fmt.Println("Deleted edge", v[0], v[1], "from ContractionPairs:",
-						graph.ContractionPairsSlice)
-					g.Snapshot()
 				}
-
 			}
 		}
 	}
