@@ -14,6 +14,7 @@ func TestSatellite(t *testing.T) {
 	RunSpecs(t, "Satellite Suite")
 }
 
+//lint:ignore U1000 Ignore unused variable warning
 type Result struct {
 	time               float64
 	position, velocity Vector3

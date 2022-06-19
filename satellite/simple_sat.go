@@ -13,6 +13,7 @@ type SimpleSatellite struct {
 	Ole2 string
 }
 
+//lint:ignore U1000 Ignore unused function
 func (s *SimpleSatellite) toString() [3]string {
 	return [3]string{s.Name, s.Ole1, s.Ole2}
 }

@@ -5,6 +5,7 @@ import (
 )
 
 // this procedure initializes variables for sgp4.
+//lint:ignore SA4006 Ignore overwritten variable warning
 func sgp4init(opsmode *string, epoch float64, satrec *Satellite) (position, velocity Vector3) {
 	var cc1sq, cc2, cc3, coef, coef1, cosio4, eeta, etasq, perige, pinvsq, psisq, qzms24, sfour, temp, temp1, temp2, temp3, temp4, tsi, xhdot1 float64
 
@@ -194,11 +195,17 @@ func sgp4init(opsmode *string, epoch float64, satrec *Satellite) (position, velo
 
 			dsinitResults := dsinit(satrec.whichconst, cosim, emsq, satrec.argpo, s1, s2, s3, s4, s5, sinim, ss1, ss2, ss3, ss4, ss5, sz1, sz3, sz11, sz13, sz21, sz23, sz31, sz33, satrec.t, tc, satrec.gsto, satrec.mo, satrec.mdot, satrec.no, satrec.nodeo, satrec.nodedot, xpidot, z1, z3, z11, z13, z21, z23, z31, z33, satrec.ecco, eccsq, em, argpm, inclm, mm, nm, nodem, satrec.irez, satrec.atime, satrec.d2201, satrec.d2211, satrec.d3210, satrec.d3222, satrec.d4410, satrec.d4422, satrec.d5220, satrec.d5232, satrec.d5421, satrec.d5433, satrec.dedt, satrec.didt, satrec.dmdt, satrec.dnodt, satrec.domdt, satrec.del1, satrec.del2, satrec.del3, satrec.xfact, satrec.xlamo, satrec.xli, satrec.xni)
 
+			//lint:ignore SA4006 Ignore unused variable warning
 			em = dsinitResults.em
+			//lint:ignore SA4006 Ignore unused variable warning
 			argpm = dsinitResults.argpm
+			//lint:ignore SA4006 Ignore unused variable warning
 			inclm = dsinitResults.inclm
+			//lint:ignore SA4006 Ignore unused variable warning
 			mm = dsinitResults.mm
+			//lint:ignore SA4006 Ignore unused variable warning
 			nm = dsinitResults.nm
+			//lint:ignore SA4006 Ignore unused variable warning
 			nodem = dsinitResults.nodem
 			satrec.irez = dsinitResults.irez
 			satrec.atime = dsinitResults.atime
@@ -381,6 +388,7 @@ func sgp4(satrec *Satellite, tsince float64) (position, velocity Vector3) {
 	mm = mm + satrec.no*templ
 	xlm = mm + argpm + nodem
 	emsq = em * em
+	//lint:ignore SA4006 Ignore unused variable warning
 	temp = 1.0 - emsq
 
 	nodem = math.Mod(nodem, TWOPI)
