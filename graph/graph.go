@@ -199,7 +199,6 @@ func (g *CGraph) Snapshot() {
 	}
 	fmt.Println("ContractionsPairsSlice:", ContractionPairsSlice)
 	fmt.Println("#############################################")
-	fmt.Println("############## DOT FILE #####################")
 }
 
 //creates & writes graph to a .dot file

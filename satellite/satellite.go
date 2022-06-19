@@ -1,63 +1,117 @@
-//IN PROGRESS
+package satellite
 
-package main
-
-import (
-	"boruvka/graph"
-	"bufio"
-	"fmt"
-	"log"
-	"os"
-)
-
-// satellite data generated from https://www.celestrak.com/NORAD/elements/table.php?GROUP=active&FORMAT=tle
-// TODO: need to check copyright or PR
-
-//type SatelliteGraph struct
-// Note the Satellite Graph will have N^2 connections worst cast (technically line of sight narrows it down) (Look at subgraphs)
+// Struct for holding satellite information during and before propagation
 type Satellite struct {
-	Name string
-	Ole1 string
-	Ole2 string
-}
+	Line1 string `json:"TLE_LINE1"`
+	Line2 string `json:"TLE_LINE2"`
 
-func (s Satellite) toString() [3]string {
-	return [3]string{s.Name, s.Ole1, s.Ole2}
-}
+	satnum int64
 
-func main() {
+	Error      int64
+	ErrorStr   string
+	whichconst GravConst
 
-	var satlist = []Satellite{}
+	epochyr    int64
+	epochdays  float64
+	jdsatepoch float64
 
-	file, err := os.Open("SatDB.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
+	ndot  float64
+	nddot float64
+	bstar float64
+	inclo float64
+	nodeo float64
+	ecco  float64
+	argpo float64
+	mo    float64
+	no    float64
+	alta  float64
+	altp  float64
 
-	//graph to hold sats
-	satG := new(graph.CGraph)
+	method        string
+	operationmode string
+	init          string
 
-	// TODO: Make this better, add scanner error checking, corrupt data read and filter, etc
-	scanner := bufio.NewScanner(file)
-	linecounter := 0
-	var sat Satellite
-	for scanner.Scan() {
-		s := scanner.Text()
-		if linecounter == 0 { // this line is the name of the satellite.
-			sat = Satellite{Name: s} // TODO: remove whitespace from name first
-		} else if linecounter == 1 { // this line is Line 1 of Orbit Info
-			sat = Satellite{Name: sat.Name, Ole1: s}
-		} else if linecounter == 2 { // this line is Line 2 of Orbit info && also final line of data, ready to append
-			sat = Satellite{Name: sat.Name, Ole1: sat.Ole1, Ole2: s}
-			satlist = append(satlist, sat)
-			satG.AddNode() //need to pass name in here
-			linecounter = -1
-			sat = Satellite{}
-		}
-		linecounter++
-	}
-	for n := range satlist {
-		fmt.Println(satlist[n].toString())
-	}
+	gsto    float64
+	isimp   float64
+	con41   float64
+	cc5     float64
+	d4      float64
+	argpdot float64
+	t       float64
+	t4cof   float64
+	x7thm1  float64
+	xlcof   float64
+	cc1     float64
+	d2      float64
+	delmo   float64
+	omgcof  float64
+	t2cof   float64
+	t5cof   float64
+	mdot    float64
+	xmcof   float64
+	aycof   float64
+	cc4     float64
+	d3      float64
+	eta     float64
+	sinmao  float64
+	t3cof   float64
+	x1mth2  float64
+	nodedot float64
+	nodecf  float64
+
+	irez  float64
+	d3210 float64
+	d4422 float64
+	d5421 float64
+	del1  float64
+	didt  float64
+	domdt float64
+	peo   float64
+	pinco float64
+	se3   float64
+	sgh4  float64
+	si2   float64
+	sl3   float64
+	xfact float64
+	xgh4  float64
+	xi2   float64
+	xl3   float64
+	zmol  float64
+	xli   float64
+	d2201 float64
+	d3222 float64
+	d5220 float64
+	d5433 float64
+	del2  float64
+	dmdt  float64
+	e3    float64
+	pgho  float64
+	plo   float64
+	sgh2  float64
+	sh2   float64
+	si3   float64
+	sl4   float64
+	xgh2  float64
+	xh2   float64
+	xi3   float64
+	xl4   float64
+	zmos  float64
+	xni   float64
+	d2211 float64
+	d4410 float64
+	d5232 float64
+	dedt  float64
+	del3  float64
+	dnodt float64
+	ee2   float64
+	pho   float64
+	se2   float64
+	sgh3  float64
+	sh3   float64
+	sl2   float64
+	xgh3  float64
+	xh3   float64
+	xl2   float64
+	xlamo float64
+	atime float64
 }

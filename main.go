@@ -25,7 +25,11 @@ package main
 
 import (
 	"boruvka/graph"
+	"boruvka/satellite"
+	"bufio"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/tmc/dot"
 )
@@ -119,9 +123,60 @@ func build_graph() (*graph.CGraph, *dot.Graph) {
 	return g, gdot
 }
 
+func parser() []satellite.Satellite {
+
+	var satlist = []satellite.SimpleSatellite{}
+	var complex_satlist = []satellite.Satellite{}
+
+	file, err := os.Open("satellite/SatDB.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	//graph to hold sats
+	//satG := new(graph.CGraph)
+
+	// TODO: Make this better, add scanner error checking, corrupt data read and filter, etc
+	scanner := bufio.NewScanner(file)
+	linecounter := 0
+	var sat satellite.SimpleSatellite
+	for scanner.Scan() {
+		s := scanner.Text()
+		if linecounter == 0 { // this line is the name of the satellite.
+			sat = satellite.SimpleSatellite{Name: s} // TODO: remove whitespace from name first
+		} else if linecounter == 1 { // this line is Line 1 of Orbit Info
+			sat = satellite.SimpleSatellite{Name: sat.Name, Ole1: s}
+		} else if linecounter == 2 { // this line is Line 2 of Orbit info && also final line of data, ready to append
+			sat = satellite.SimpleSatellite{Name: sat.Name, Ole1: sat.Ole1, Ole2: s}
+			satlist = append(satlist, sat)
+			//satG.AddNode() //need to pass name in here
+			linecounter = -1
+			sat = satellite.SimpleSatellite{}
+		}
+		linecounter++
+	}
+	//for n := range satlist {
+	//	fmt.Println(satlist[n].Name)
+	//	fmt.Println(satlist[n].Ole1)
+	//	fmt.Println(satlist[n].Ole2)
+	//}
+	for n := range satlist {
+		complex_satlist = append(complex_satlist, satellite.TLEToSat(satlist[n].Ole1, satlist[n].Ole2, satellite.GravityWGS84))
+	}
+	return complex_satlist
+}
+
 func main() {
+
 	//########## Initialize graph ######################
 	g, gdot := build_graph()
+
+	Satellites := parser()
+	satellite.TLEToSat(Satellites[0].Line1, Satellites[0].Line2, satellite.GravityWGS84)
+	pos, vel := satellite.Propagate(Satellites[0], 2022, 6, 1, 0, 0, 0)
+	fmt.Println(pos, vel)
+
 	g.Snapshot()
 
 	for g.GetNrNodes() > 1 {
