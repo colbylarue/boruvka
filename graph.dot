@@ -1,0 +1,23 @@
+graph "Example Graph" {
+graph [
+  layout=circo;
+];
+"0";
+"1";
+"2";
+"3";
+"4";
+"5";
+"6";
+"0" -- "1"  [ label="7", weight="7" ]
+"0" -- "3"  [ label="4", weight="4" ]
+"1" -- "2"  [ label="11", weight="11" ]
+"1" -- "3"  [ label="9", weight="9" ]
+"1" -- "4"  [ label="10", weight="10" ]
+"2" -- "4"  [ label="5", weight="5" ]
+"3" -- "4"  [ label="15", weight="15" ]
+"3" -- "5"  [ label="6", weight="6" ]
+"4" -- "5"  [ label="12", weight="12" ]
+"4" -- "6"  [ label="8", weight="8" ]
+"5" -- "6"  [ label="13", weight="13" ]
+}

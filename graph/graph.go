@@ -5,10 +5,14 @@ Initial library was this one from github:
 */
 package graph
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var Tree = make(map[[2]int][3]int) //Holds the tree edges, in the "2-3" format
 var ContractionPairsSlice = make([][2]int, 0)
+
+//var visited = make(map[int]int)
 
 type CGraph struct { //Component Graph
 	nrNodes int
@@ -21,6 +25,77 @@ type CGraphNode struct {
 	//value is array of 2 original nodes (source, dest) plus weight
 	minEdge [5]int //holds min edge for Boruvka alg.
 }
+
+/*
+func traverse(*CGraph) {
+	for node := range adjList {
+		if visited[node] == 1 {
+			continue
+		}
+		if !dfs(node, adjList, &visited) {
+			return false
+		}
+	}
+}
+
+func dfs(node int, adjList map[int][]int, visited *map[int]int) bool {
+
+	neighbourArr, ok := adjList[node]
+	if !ok {
+		return true
+	}
+
+	if (*visited)[node] == -1 {
+		return false
+	}
+
+	if (*visited)[node] == 1 {
+		return true
+	}
+
+	(*visited)[node] = -1
+
+	for _, neighbour := range neighbourArr {
+		if !dfs(neighbour, adjList, visited) {
+			return false
+		}
+	}
+	(*visited)[node] = 1
+	return true
+}
+*/
+/*
+func convert() (*cgraph.Graph, error) {
+	g := graphviz.New()
+	graph, err := g.Graph()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := graph.Close(); err != nil {
+			log.Fatal(err)
+		}
+		g.Close()
+	}()
+	n, err := graph.CreateNode("n")
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := graph.CreateNode("m")
+	if err != nil {
+		log.Fatal(err)
+	}
+	e, err := graph.CreateEdge("e", n, m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	e.SetLabel("e")
+	var buf bytes.Buffer
+	if err := g.Render(graph, "dot", &buf); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(buf.String())
+}*/
 
 func min(a, b int) int {
 	if a < b {
@@ -64,6 +139,8 @@ func (g *CGraph) AddEdgeBoth(n1, n2 int, w int) {
 		g.nodes[n1].edges[[2]int{n2, n1}] = [3]int{n2, n1, w}
 		g.nodes[n2].edges[[2]int{n2, n1}] = [3]int{n2, n1, w}
 	}
+
+	fmt.Println(g)
 }
 
 // Neighbors : returns a slice of node IDs that are linked to this node
@@ -124,6 +201,11 @@ func (g *CGraph) Snapshot() {
 	fmt.Println("#############################################")
 }
 
+//creates & writes graph to a .dot file
+//func (g *CGraph) generateDot() {
+//
+//}
+
 //Returns a slice representing the min edge for the node
 func (g *CGraph) NodeMinEdgeGet(id int) [5]int {
 	return g.nodes[id].minEdge
@@ -138,6 +220,14 @@ func (g *CGraph) NodeMinEdgeSet(id int) {
 			minE[2] = v[0]
 			minE[3] = v[1]
 			minE[4] = v[2]
+		} else if v[2] == minE[4] { //implement tie-break rule
+			if k[0]+k[1] < minE[0]+minE[1] { //new edge has a smaller node id
+				minE[0] = k[0]
+				minE[1] = k[1]
+				minE[2] = v[0]
+				minE[3] = v[1]
+				minE[4] = v[2]
+			}
 		}
 	}
 	g.nodes[id].minEdge = minE //OK to copy arrays in Go!
