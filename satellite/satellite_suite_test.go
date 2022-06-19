@@ -21,61 +21,6 @@ type Result struct {
 }
 
 var _ = Describe("go-satellite", func() {
-	Describe("ParseTLE", func() {
-		It("should return correctly parsed values for given ISS#25544", func() {
-			sat := ParseTLE("1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927", "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537", "wgs84")
-
-			Expect(sat.satnum).To(Equal(int64(25544)))
-			Expect(sat.epochyr).To(Equal(int64(8)))
-			Expect(sat.epochdays).To(Equal(264.51782528))
-			Expect(sat.ndot).To(Equal(-2.182e-05))
-			Expect(sat.nddot).To(Equal(0.0))
-			Expect(sat.bstar).To(Equal(-1.1606e-05))
-
-			Expect(sat.inclo).To(Equal(51.6416))
-			Expect(sat.nodeo).To(Equal(247.4627))
-			Expect(sat.ecco).To(Equal(0.0006703))
-			Expect(sat.argpo).To(Equal(130.536))
-			Expect(sat.mo).To(Equal(325.0288))
-			Expect(sat.no).To(Equal(15.72125391))
-		})
-
-		It("should return correctly parsed values for given NOAA 19#33591", func() {
-			sat := ParseTLE("1 33591U 09005A   16163.48990228  .00000077  00000-0  66998-4 0  9990", "2 33591  99.0394 120.2160 0013054 232.8317 127.1662 14.12079902378332", "wgs84")
-
-			Expect(sat.satnum).To(Equal(int64(33591)))
-			Expect(sat.epochyr).To(Equal(int64(16)))
-			Expect(sat.epochdays).To(Equal(163.48990228))
-			Expect(sat.ndot).To(Equal(7.7e-7))
-			Expect(sat.nddot).To(Equal(0.0))
-			Expect(sat.bstar).To(Equal(.66998e-4))
-
-			Expect(sat.inclo).To(Equal(99.0394))
-			Expect(sat.nodeo).To(Equal(120.216))
-			Expect(sat.ecco).To(Equal(0.0013054))
-			Expect(sat.argpo).To(Equal(232.8317))
-			Expect(sat.mo).To(Equal(127.1662))
-			Expect(sat.no).To(Equal(14.12079902))
-		})
-
-		It("should return correctly parsed values for given TITAN 3C#4362", func() {
-			sat := ParseTLE("1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955", "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145", "wgs84")
-
-			Expect(sat.satnum).To(Equal(int64(4632)))
-			Expect(sat.epochyr).To(Equal(int64(4)))
-			Expect(sat.epochdays).To(Equal(31.91070959))
-			Expect(sat.ndot).To(Equal(-8.4e-7))
-			Expect(sat.nddot).To(Equal(0.0))
-			Expect(sat.bstar).To(Equal(.1e-3))
-
-			Expect(sat.inclo).To(Equal(11.4628))
-			Expect(sat.nodeo).To(Equal(273.1101))
-			Expect(sat.ecco).To(Equal(0.1450506))
-			Expect(sat.argpo).To(Equal(207.6))
-			Expect(sat.mo).To(Equal(143.935))
-			Expect(sat.no).To(Equal(1.20231981))
-		})
-	})
 
 	Describe("Propagate", func() {
 		testCases := [8]PropagationTestCase{

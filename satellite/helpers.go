@@ -18,6 +18,11 @@ type LatLong struct {
 	Latitude, Longitude float64
 }
 
+// Holds latitude and Longitude in either degrees or radians
+type LatLongAlt struct {
+	Latitude, Longitude, Altitude float64
+}
+
 // Holds X, Y, Z position
 type Vector3 struct {
 	X, Y, Z float64

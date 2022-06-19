@@ -34,7 +34,7 @@ import (
 	"github.com/tmc/dot"
 )
 
-func build_graph() (*graph.CGraph, *dot.Graph) {
+func build_graph() *graph.CGraph {
 	g := new(graph.CGraph)
 	gdot := dot.NewGraph("Example Graph")
 	gdot.SetType(dot.GRAPH)
@@ -120,13 +120,21 @@ func build_graph() (*graph.CGraph, *dot.Graph) {
 	e11.Set("label", "13")
 	gdot.AddEdge(e11)
 
-	return g, gdot
+	//generate dot file
+	file, err := os.Create("graph.dot")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	file.WriteString(gdot.String())
+
+	return g
 }
 
-func parser() []satellite.Satellite {
+func parser() []satellite.SimpleSatellite {
 
 	var satlist = []satellite.SimpleSatellite{}
-	var complex_satlist = []satellite.Satellite{}
 
 	file, err := os.Open("satellite/SatDB.txt")
 	if err != nil {
@@ -156,26 +164,21 @@ func parser() []satellite.Satellite {
 		}
 		linecounter++
 	}
-	//for n := range satlist {
-	//	fmt.Println(satlist[n].Name)
-	//	fmt.Println(satlist[n].Ole1)
-	//	fmt.Println(satlist[n].Ole2)
-	//}
+
+	// init all satellites
 	for n := range satlist {
-		complex_satlist = append(complex_satlist, satellite.TLEToSat(satlist[n].Ole1, satlist[n].Ole2, satellite.GravityWGS84))
+		satellite.InitSat(&satlist[n])
 	}
-	return complex_satlist
+	return satlist
 }
 
 func main() {
 
 	//########## Initialize graph ######################
-	g, gdot := build_graph()
-
+	g := build_graph()
 	Satellites := parser()
-	satellite.TLEToSat(Satellites[0].Line1, Satellites[0].Line2, satellite.GravityWGS84)
-	pos, vel := satellite.Propagate(Satellites[0], 2022, 6, 1, 0, 0, 0)
-	fmt.Println(pos, vel)
+
+	fmt.Println(Satellites)
 
 	g.Snapshot()
 
@@ -239,5 +242,4 @@ func main() {
 		}
 	}
 
-	fmt.Println(gdot.String())
 }

@@ -64,7 +64,7 @@ func GSTimeFromDate(year, mon, day, hr, min, sec int) float64 {
 
 // Convert Earth Centered Inertial coordinated into equivalent latitude, longitude, altitude and velocity.
 // Reference: http://celestrak.com/columns/v02n03/
-func ECIToLLA(eciCoords Vector3, gmst float64) (altitude, velocity float64, ret LatLong) {
+func ECIToLLA(eciCoords Vector3, gmst float64) (ret LatLongAlt) {
 	a := 6378.137     // Semi-major Axis
 	b := 6356.7523142 // Semi-minor Axis
 	f := (a - b) / a  // Flattening
@@ -84,13 +84,14 @@ func ECIToLLA(eciCoords Vector3, gmst float64) (altitude, velocity float64, ret 
 	}
 
 	// Calc Alt
-	altitude = (sqx2y2 / math.Cos(latitude)) - (a * C)
+	altitude := (sqx2y2 / math.Cos(latitude)) - (a * C)
 
 	// Orbital Speed ≈ sqrt(μ / r) where μ = std. gravitaional parameter
-	velocity = math.Sqrt(398600.4418 / (altitude + 6378.137))
+	//velocity = math.Sqrt(398600.4418 / (altitude + 6378.137))
 
 	ret.Latitude = latitude
 	ret.Longitude = longitude
+	ret.Altitude = altitude
 
 	return
 }
