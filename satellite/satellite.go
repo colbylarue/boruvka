@@ -1,5 +1,9 @@
 package satellite
 
+// https://github.com/joshuaferrara/go-satellite
+// most of this code is copied from this library BUT this code is pulled from
+//
+
 // Struct for holding satellite information during and before propagation
 //lint:ignore U1000 Ignore overwritten variable warning
 type Satellite struct {
