@@ -34,7 +34,8 @@ import (
 	"github.com/tmc/dot"
 )
 
-func build_graph() *graph.CGraph {
+// TODO: Convert this to just be a unit test
+func buildGraph() *graph.CGraph {
 	g := new(graph.CGraph)
 	gdot := dot.NewGraph("Example Graph")
 	gdot.SetType(dot.GRAPH)
@@ -175,7 +176,15 @@ func parser() []satellite.SimpleSatellite {
 func main() {
 
 	//########## Initialize graph ######################
-	g := build_graph()
+	g, gdot := graph.GraphBuilderCsv("data/graph02_12_nodes.csv")
+	//generate dot file
+	file, err := os.Create("graph.dot")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	file.WriteString(gdot.String())
 	Satellites := parser()
 
 	fmt.Println(Satellites)
