@@ -176,15 +176,15 @@ func parser() []satellite.SimpleSatellite {
 func main() {
 
 	//########## Initialize graph ######################
-	g, gdot := graph.GraphBuilderCsv("data/graph02_12_nodes.csv")
+	g, gdot := graph.GraphBuilderCsv("data/graph02_12_nodes_no_BOM.csv")
 	//generate dot file
 	file, err := os.Create("graph.dot")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
-
 	file.WriteString(gdot.String())
+
 	Satellites := parser()
 
 	fmt.Println(Satellites)

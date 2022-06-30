@@ -45,8 +45,7 @@ func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
 	// create map of fields
 	var fieldMap map[string]string
 	var nodes []dot.Node
-	i := 0
-	for {
+	for i := 0; ; i++ {
 		rec, err := csvReader.Read()
 		if err == io.EOF {
 			break
@@ -66,7 +65,7 @@ func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
 			}
 			numOfNodes = n
 			//create nodes in graph id starts at 0
-			for i < numOfNodes {
+			for i := 0; i < numOfNodes; i++ {
 				g.AddNode()
 
 				ndot := dot.NewNode(fmt.Sprint(i))
