@@ -86,6 +86,17 @@ func main() {
 
 	Satellites := parser()
 
+	//fmt.Println(Satellites)
+
+	//generate dot file
+	f, err := os.Create("graph.dot")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	f.WriteString(gdot.String())
+
 	fmt.Println(Satellites)
 
 	g.Snapshot()

@@ -26,6 +26,77 @@ type CGraphNode struct {
 	minEdge [5]int //holds min edge for Boruvka alg.
 }
 
+/*
+func traverse(*CGraph) {
+	for node := range adjList {
+		if visited[node] == 1 {
+			continue
+		}
+		if !dfs(node, adjList, &visited) {
+			return false
+		}
+	}
+}
+
+func dfs(node int, adjList map[int][]int, visited *map[int]int) bool {
+
+	neighbourArr, ok := adjList[node]
+	if !ok {
+		return true
+	}
+
+	if (*visited)[node] == -1 {
+		return false
+	}
+
+	if (*visited)[node] == 1 {
+		return true
+	}
+
+	(*visited)[node] = -1
+
+	for _, neighbour := range neighbourArr {
+		if !dfs(neighbour, adjList, visited) {
+			return false
+		}
+	}
+	(*visited)[node] = 1
+	return true
+}
+*/
+/*
+func convert() (*cgraph.Graph, error) {
+	g := graphviz.New()
+	graph, err := g.Graph()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := graph.Close(); err != nil {
+			log.Fatal(err)
+		}
+		g.Close()
+	}()
+	n, err := graph.CreateNode("n")
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := graph.CreateNode("m")
+	if err != nil {
+		log.Fatal(err)
+	}
+	e, err := graph.CreateEdge("e", n, m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	e.SetLabel("e")
+	var buf bytes.Buffer
+	if err := g.Render(graph, "dot", &buf); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(buf.String())
+}*/
+
 func min(a, b int) int {
 	if a < b {
 		return a
