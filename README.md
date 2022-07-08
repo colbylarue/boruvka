@@ -11,7 +11,7 @@ Navigate to graph directory in command line and install the local graph as a go 
 
 ```bash
 cd wherever
-git clone https://github.com/colbylarue/boruvka.git
+git clone --recurse-submodules https://github.com/colbylarue/boruvka.git
 cd boruvka
 go install
 ```
