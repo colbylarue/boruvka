@@ -87,6 +87,9 @@ func BuildDotFromCGraph(g *CGraph) *dot.Graph {
 			}
 			if !valExists {
 				edge := dot.NewEdge(FindNodeById(nodes, strconv.Itoa(key[0])), FindNodeById(nodes, strconv.Itoa(key[1])))
+				if edge.Source().Name() == "error" || edge.Destination().Name() == "error" {
+					continue
+				}
 				edge.Set("weight", fmt.Sprint(val[2]))
 				edge.Set("label", fmt.Sprint(val[2]))
 				gdot.AddEdge(edge)
@@ -106,7 +109,7 @@ func BuildDotFromCGraph(g *CGraph) *dot.Graph {
 			break
 		} else {
 			fmt.Printf("%v file exist\n", filename)
-			filename = "graph_snapshot_" + fmt.Sprint(i)
+			filename = "graph_snapshot_" + fmt.Sprint(i) + ".dot"
 		}
 	}
 

@@ -97,6 +97,9 @@ func main() {
 				} else if graph.OnlyOnceInSlice(v[1], graph.ContractionPairsSlice) {
 					leafSlice = append(leafSlice, [3]int{v[1], v[0], i})
 				} //else do nothing - if they both appear more than once, it's not a leaf edge
+
+				new_g = graph.BuildDotFromCGraph(g)
+				fmt.Println(new_g.String())
 			}
 			fmt.Println("\n############### leafSlice ################\n", leafSlice)
 			//Perform a round of leaf contractions according to leafSlice
@@ -106,8 +109,12 @@ func main() {
 					fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAllMap())
 					//Delete the pair from ContractionPairs
 					graph.ContractionPairsSlice[v[2]] = [2]int{-1, -1}
+					new_g = graph.BuildDotFromCGraph(g)
+					fmt.Println(new_g.String())
 				}
 			}
+			new_g = graph.BuildDotFromCGraph(g)
+			fmt.Println(new_g.String())
 		}
 	}
 
