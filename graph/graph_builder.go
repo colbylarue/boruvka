@@ -7,29 +7,124 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/tmc/dot"
 )
 
-//func graphBuilder(*dot.Graph) (*CGraph, *dot.Graph) {
-//	g := new(CGraph)
-//	gdot := dot.NewGraph("Example Graph")
-//	gdot.SetType(dot.GRAPH)
-//	gdot.Set("layout", "circo")
-//
-//	//1. read in dot file graph
-//	//2. create dot graph
-//	//3. create CGraph
-//	// Node id must match up
-//
-//	return g, gdot
-//}
+// TODO: GraphBuilderDot() - generate CGraph from Dot file
+//1. read in dot file graph
+//2. create dot graph
+//3. create CGraph
+// Node id must match up if node is -1 ignore
+
+func Contains(nodes []dot.Node, n dot.Node) bool {
+	//search existing nodes to see if it already exists
+	nodeExists := false
+	for j := 0; j < len(nodes); j++ {
+		//    Compare: Return 0, if str1 == str2.
+		//    Compare: Return 1, if str1 > str2.
+		//    Compare: Return -1, if str1 < str2.
+		if strings.Compare(nodes[j].Name(), n.Name()) == 0 {
+			// This means we have already added it to the node list
+			nodeExists = true
+			break
+		}
+	}
+	return nodeExists
+}
+
+func FindNodeById(nodes []dot.Node, id string) *dot.Node {
+
+	for i := 0; i < len(nodes); i++ {
+		//fmt.Printf("FindNodeById(): id= %s Name= %s", id, nodes[i].Name())
+		if strings.Compare(nodes[i].Name(), id) == 0 {
+			// This means we have found the node
+			//fmt.Printf("FindNodeById(): nodes[%d]=%s ", i, nodes[i].Name())
+			return &nodes[i]
+		}
+	}
+	// the node didn't match names
+	// TODO: Handle error here elegantly
+	return dot.NewNode("error")
+}
+
+func BuildDotFromCGraph(g *CGraph) *dot.Graph {
+	gdot := dot.NewGraph("GeneratedGraph")
+	gdot.SetType(dot.GRAPH)
+	gdot.Set("layout", "dot")
+	var nodes []dot.Node
+
+	for i := 0; i < g.nrNodes; i++ {
+		if g.nodes[i].id < 0 {
+			// -1 this means the node is absorbed into another
+			continue
+		}
+		ndot := dot.NewNode(fmt.Sprint(i))
+		nodeExists := Contains(nodes, *ndot)
+		if nodeExists {
+			// already exists don't add
+			continue
+		}
+		gdot.AddNode(ndot)
+		nodes = append(nodes, *ndot)
+	}
+
+	var edges [][3]int
+	// Now that all the nodes exist we need to add the edges
+
+	for i := 0; i < g.nrNodes; i++ {
+		//iterate through each nodes edges
+		for key, val := range g.nodes[i].edges {
+			//fmt.Println("...Key:", key, "=>", "Element:", val)
+			valExists := false
+			//check to see if we have already added this edge
+			for _, it := range edges {
+				if it == val {
+					valExists = true
+					break
+				}
+			}
+			if !valExists {
+				edge := dot.NewEdge(FindNodeById(nodes, strconv.Itoa(key[0])), FindNodeById(nodes, strconv.Itoa(key[1])))
+				edge.Set("weight", fmt.Sprint(val[2]))
+				edge.Set("label", fmt.Sprint(val[2]))
+				gdot.AddEdge(edge)
+				edges = append(edges, val)
+			}
+
+		}
+
+	}
+	//generate dot file
+
+	filename := "graph_snapshot"
+	for i := 0; ; i++ {
+		_, error := os.Stat(filename)
+		// check if error is "file not exists"
+		if os.IsNotExist(error) {
+			break
+		} else {
+			fmt.Printf("%v file exist\n", filename)
+			filename = "graph_snapshot_" + fmt.Sprint(i)
+		}
+	}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	file.WriteString(gdot.String())
+
+	return gdot
+}
 
 func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
 	g := new(CGraph)
 	gdot := dot.NewGraph("Example Graph")
 	gdot.SetType(dot.GRAPH)
-	gdot.Set("layout", "circo")
+	gdot.Set("layout", "dot")
 	// open file
 	f, err := os.Open(csvFilePath)
 	if err != nil {

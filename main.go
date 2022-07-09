@@ -25,52 +25,10 @@ package main
 
 import (
 	"boruvka/graph"
-	"boruvka/satellite"
-	"bufio"
 	"fmt"
 	"log"
 	"os"
 )
-
-func parser() []satellite.SimpleSatellite {
-
-	var satlist = []satellite.SimpleSatellite{}
-
-	file, err := os.Open("satellite/SatDB.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	//graph to hold sats
-	//satG := new(graph.CGraph)
-
-	// TODO: Make this better, add scanner error checking, corrupt data read and filter, etc
-	scanner := bufio.NewScanner(file)
-	linecounter := 0
-	var sat satellite.SimpleSatellite
-	for scanner.Scan() {
-		s := scanner.Text()
-		if linecounter == 0 { // this line is the name of the satellite.
-			sat = satellite.SimpleSatellite{Name: s} // TODO: remove whitespace from name first
-		} else if linecounter == 1 { // this line is Line 1 of Orbit Info
-			sat = satellite.SimpleSatellite{Name: sat.Name, Ole1: s}
-		} else if linecounter == 2 { // this line is Line 2 of Orbit info && also final line of data, ready to append
-			sat = satellite.SimpleSatellite{Name: sat.Name, Ole1: sat.Ole1, Ole2: s}
-			satlist = append(satlist, sat)
-			//satG.AddNode() //need to pass name in here
-			linecounter = -1
-			sat = satellite.SimpleSatellite{}
-		}
-		linecounter++
-	}
-
-	// init all satellites
-	for n := range satlist {
-		satellite.InitSat(&satlist[n])
-	}
-	return satlist
-}
 
 func main() {
 
@@ -84,20 +42,12 @@ func main() {
 	defer file.Close()
 	file.WriteString(gdot.String())
 
-	Satellites := parser()
+	//Test building Dot from CGraph
+	new_g := graph.BuildDotFromCGraph(g)
+	fmt.Println(new_g.String())
+	//Satellites := satellite.Parser()
 
 	//fmt.Println(Satellites)
-
-	//generate dot file
-	f, err := os.Create("graph.dot")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	f.WriteString(gdot.String())
-
-	fmt.Println(Satellites)
 
 	g.Snapshot()
 
