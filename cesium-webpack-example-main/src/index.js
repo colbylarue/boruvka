@@ -25,17 +25,14 @@ for (var i=0; i < data.entities.length; i++) {
   viewer.entities.add({
     name : data.entities[i].name,
     label : data.entities[i].name,
-    position : Cartesian3.fromDegrees(data.entities[i].position.Longitude,
-      data.entities[i].position.Latitude,
+    position : Cartesian3.fromDegrees(data.entities[i].position.Longitude*180*Math.PI,
+      data.entities[i].position.Latitude*180*Math.PI,
       data.entities[i].position.Altitude * 1000 // kilometers to meters 
       ),
     point : {
       color : Color.RED,
-      pixelSize : 10
+      pixelSize : 5
     }
   });
 }
-
-
-
 //viewer.trackedEntity = entity;
