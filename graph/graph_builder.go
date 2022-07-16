@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -101,25 +102,35 @@ func BuildDotFromCGraph(g *CGraph) *dot.Graph {
 	}
 	//generate dot file
 
-	filename := "graph_snapshot"
+	filename := "graph_snapshot_0.dot"
+	cwd, _ := os.Getwd()
+	err := os.Mkdir("out", os.ModeDir) // you might want different file access, this suffice for this example
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("Created %s at %s\n", "out", cwd)
+	}
+
 	for i := 0; ; i++ {
-		_, error := os.Stat(filename)
+		_, error := os.Stat(filepath.Join(cwd, "out", filename))
 		// check if error is "file not exists"
 		if os.IsNotExist(error) {
 			break
 		} else {
-			fmt.Printf("%v file exist\n", filename)
+			//fmt.Printf("%v file exist\n", filename)
 			filename = "graph_snapshot_" + fmt.Sprint(i) + ".dot"
 		}
 	}
 
-	file, err := os.Create(filename)
+	path := filepath.Join(cwd, "out", filename)
+	newFilePath := filepath.FromSlash(path)
+	file, err := os.Create(newFilePath)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	defer file.Close()
-	file.WriteString(gdot.String())
 
+	file.WriteString(gdot.String())
 	return gdot
 }
 

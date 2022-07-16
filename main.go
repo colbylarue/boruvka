@@ -25,12 +25,24 @@ package main
 
 import (
 	"boruvka/graph"
+	"boruvka/satellite"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func main() {
+	files, err := filepath.Glob(filepath.Join("out", "*"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, file := range files {
+		err = os.RemoveAll(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 
 	//########## Initialize graph ######################
 	g, gdot := graph.GraphBuilderCsv("data/graph02_12_nodes_no_BOM.csv")
@@ -45,9 +57,9 @@ func main() {
 	//Test building Dot from CGraph
 	new_g := graph.BuildDotFromCGraph(g)
 	fmt.Println(new_g.String())
-	//Satellites := satellite.Parser()
-
-	//fmt.Println(Satellites)
+	// This method is slow TODO: investigate speedup
+	Satellites := satellite.Parser("satellite/SatDB.txt")
+	satellite.GenerateCzml(Satellites)
 
 	g.Snapshot()
 

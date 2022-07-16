@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+// python implementation https://pypi.org/project/sgp4/#providing-your-own-elements
+// https://github.com/joshuaferrara/go-satellite
 // this procedure initializes variables for sgp4.
 func sgp4init(opsmode *string, epoch float64, satrec *Satellite) (position, velocity Vector3) {
 	var cc1sq, cc2, cc3, coef, coef1, cosio4, eeta, etasq, perige, pinvsq, psisq, qzms24, sfour, temp, temp1, temp2, temp3, temp4, tsi, xhdot1 float64

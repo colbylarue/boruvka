@@ -7,8 +7,8 @@ import (
 func TestSimpleSatellite(t *testing.T) {
 	t.Run("Simple Satellite Test", func(t *testing.T) {
 		ss := SimpleSatellite{Name: "Test 1",
-			Ole1: "1 00900U 64063C   22160.52204282  .00000408  00000+0  42495-3 0  9992",
-			Ole2: "2 00900  90.1760  40.7701 0029467  47.9267  23.7177 13.73809888869573"}
+			Tle1: "1 00900U 64063C   22160.52204282  .00000408  00000+0  42495-3 0  9992",
+			Tle2: "2 00900  90.1760  40.7701 0029467  47.9267  23.7177 13.73809888869573"}
 		InitSat(&ss)
 
 		if ss.Lla.Latitude == 0 {

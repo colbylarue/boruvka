@@ -8,6 +8,7 @@ import (
 )
 
 // Constants
+const RADIUS_EARTH_METERS = 6371000
 const TWOPI float64 = math.Pi * 2.0
 const DEG2RAD float64 = math.Pi / 180.0
 const RAD2DEG float64 = 180.0 / math.Pi

@@ -2,7 +2,13 @@
 
 Implementation of the boruvka MST algorithm. 
 These instructions assume VS Code is being used. 
-
+## Prerequisites
+Install Google Chrome
+Install Node.js from https://nodejs.org/en/download/
+Install cesium from https://cesium.com/downloads/
+```bash
+npm install cesium 
+```
 ## Setup
 
 Assuming git and golang are both installed.
@@ -18,23 +24,25 @@ go install
 Open VSCode. 
 Open Folder. Select the folder you just cloned.
 
+Install Visualization
+```bash
+cd visualization
+npm install --save-dev webpack
+npm install --save-dev style-loader css-loader url-loader
+npm install --save-dev html-webpack-plugin
+npm install --save-dev webpack webpack-cli
+```
 ## Usage
 
-```go
-example
-
-# returns 'words'
-foobar.pluralize('word')
-
-# returns 'geese'
-foobar.pluralize('goose')
+```
+TODO:
 ```
 
 ## Contributing
 Create a new branch to work in. 
 Push your local changes to your remote branch
 Create a Pull Request to merge into master. 
-     a. select a reviewer.
+     a. select  cdlarue (me) as a reviewer.
      b. address review comments if applicable.
      b. merge when approved. 
 
