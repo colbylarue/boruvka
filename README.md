@@ -3,15 +3,16 @@
 Implementation of the boruvka MST algorithm. 
 These instructions assume VS Code is being used. 
 ## Prerequisites
-Install Google Chrome
+Install Git from 
+Install Golang
+Install Google Chrome (mine works in firefox and chrome)
 Install Node.js from https://nodejs.org/en/download/
-Install cesium from https://cesium.com/downloads/
+Install cesium from https://cesium.com/downloads/ using npm
+
 ```bash
 npm install cesium 
 ```
 ## Setup
-
-Assuming git and golang are both installed.
 First clone git repo.
 Navigate to graph directory in command line and install the local graph as a go package (Note: if you make changes to the graph library you may need to do a go install again)
 
@@ -26,11 +27,9 @@ Open Folder. Select the folder you just cloned.
 
 Install Visualization
 ```bash
-cd visualization
-npm install --save-dev webpack
-npm install --save-dev style-loader css-loader url-loader
-npm install --save-dev html-webpack-plugin
-npm install --save-dev webpack webpack-cli
+cd cesium-webpack-example-main
+npm install
+npm start
 ```
 ## Usage
 
@@ -47,3 +46,4 @@ Create a Pull Request to merge into master.
      b. merge when approved. 
 
 ## License
+TODO
