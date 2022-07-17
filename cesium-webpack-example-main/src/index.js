@@ -1,4 +1,4 @@
-import { Ion, Viewer, createWorldTerrain, createOsmBuildings, Cartesian3, Color} from "cesium";
+import { Ion, Viewer, createWorldTerrain, createOsmBuildings, Cartesian3,  HeadingPitchRoll, Math, Transforms, Color} from "cesium";
 import "cesium/Widgets/widgets.css";
 import "../src/css/main.css";
 
@@ -20,19 +20,45 @@ var entities = '{"entities":[{"name":"CALSPHERE1","position":{"Latitude":1.21972
 var data = JSON.parse(entities)
 console.log(data.entities[0].position.Altitude);
 
+var heading = Math.toRadians(135);
+var pitch = 0;
+var roll = 0;
+
 for (var i=0; i < data.entities.length; i++) {
-  console.log(data.entities[i].name)
+  console.log(data.entities[i].name);
+
+  var pos = Cartesian3.fromDegrees(
+    data.entities[i].position.Longitude*180*Math.PI,
+    data.entities[i].position.Latitude*180*Math.PI,
+    data.entities[i].position.Altitude * 1000 //kilometers to meters 
+  )
+ 
+  //var hpr = new HeadingPitchRoll(heading, pitch, roll);
+  //var or = Transforms.headingPitchRollQuaternion(
+  //  pos,
+  //  hpr
+  //);
+
   viewer.entities.add({
     name : data.entities[i].name,
-    label : data.entities[i].name,
-    position : Cartesian3.fromDegrees(data.entities[i].position.Longitude*180*Math.PI,
-      data.entities[i].position.Latitude*180*Math.PI,
-      data.entities[i].position.Altitude * 1000 // kilometers to meters 
-      ),
+    position : pos,
     point : {
-      color : Color.RED,
+      color : Color.LIGHTSKYBLUE,
       pixelSize : 5
     }
   });
+
+  //TODO: make satellite visualizion faster this is too slow but it does work
+  /*viewer.entities.add({
+    name : data.entities[i].name,
+    position : pos,
+    orientation : or,
+    model : {
+      uri: "models/satellite.glb",
+      minimumPixelSize: 512,
+      maximumScale: 20000
+    }
+  });*/
+
 }
 //viewer.trackedEntity = entity;
