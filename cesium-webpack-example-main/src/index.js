@@ -20,7 +20,7 @@ var entities = '{"entities":[{"name":"CALSPHERE1","position":{"Latitude":1.21972
 var data = JSON.parse(entities)
 console.log(data.entities[0].position.Altitude);
 
-var heading = Math.toRadians(135);
+var heading = Math.toRadians(0);
 var pitch = 0;
 var roll = 0;
 
@@ -33,13 +33,13 @@ for (var i=0; i < data.entities.length; i++) {
     data.entities[i].position.Altitude * 1000 //kilometers to meters 
   )
  
-  //var hpr = new HeadingPitchRoll(heading, pitch, roll);
-  //var or = Transforms.headingPitchRollQuaternion(
-  //  pos,
-  //  hpr
-  //);
+  var hpr = new HeadingPitchRoll(heading, pitch, roll);
+  var or = Transforms.headingPitchRollQuaternion(
+    pos,
+    hpr
+  );
 
-  viewer.entities.add({
+  /*viewer.entities.add({
     name : data.entities[i].name,
     position : pos,
     point : {
@@ -47,9 +47,9 @@ for (var i=0; i < data.entities.length; i++) {
       pixelSize : 5
     }
   });
-
+*/
   //TODO: make satellite visualizion faster this is too slow but it does work
-  /*viewer.entities.add({
+  viewer.entities.add({
     name : data.entities[i].name,
     position : pos,
     orientation : or,
@@ -58,7 +58,7 @@ for (var i=0; i < data.entities.length; i++) {
       minimumPixelSize: 512,
       maximumScale: 20000
     }
-  });*/
+  });
 
 }
 //viewer.trackedEntity = entity;

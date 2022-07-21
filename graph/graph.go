@@ -26,6 +26,14 @@ type CGraphNode struct {
 	minEdge [5]int //holds min edge for Boruvka alg.
 }
 
+func (n *CGraphNode) GetId() int {
+	return n.id
+}
+
+func (g *CGraph) GetNode(id int) CGraphNode {
+	return *g.nodes[id]
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a

@@ -50,7 +50,7 @@ func FindNodeById(nodes []dot.Node, id string) *dot.Node {
 	return dot.NewNode("error")
 }
 
-func BuildDotFromCGraph(g *CGraph) *dot.Graph {
+func BuildDotFromCGraph(g *CGraph, outfile string) *dot.Graph {
 	gdot := dot.NewGraph("GeneratedGraph")
 	gdot.SetType(dot.GRAPH)
 	gdot.Set("layout", "dot")
@@ -101,8 +101,13 @@ func BuildDotFromCGraph(g *CGraph) *dot.Graph {
 
 	}
 	//generate dot file
+	var filename string
+	if outfile == "" {
+		filename = "graph_snapshot_0.dot"
+	} else {
+		filename = outfile
+	}
 
-	filename := "graph_snapshot_0.dot"
 	cwd, _ := os.Getwd()
 	err := os.Mkdir("out", os.ModeDir) // you might want different file access, this suffice for this example
 	if err != nil {
@@ -118,7 +123,7 @@ func BuildDotFromCGraph(g *CGraph) *dot.Graph {
 			break
 		} else {
 			//fmt.Printf("%v file exist\n", filename)
-			filename = "graph_snapshot_" + fmt.Sprint(i) + ".dot"
+			filename = filename + fmt.Sprint(i) + ".dot"
 		}
 	}
 

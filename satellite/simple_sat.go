@@ -1,6 +1,7 @@
 package satellite
 
 import (
+	"boruvka/graph"
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -13,17 +14,20 @@ import (
 // satellite data generated from https://www.celestrak.com/NORAD/elements/table.php?GROUP=active&FORMAT=tle
 // TODO: need to check copyright or PR
 
+var counter int = 0
+
 // type SimpleSatellite struct
 // SimpleSatellite is intended to abstract away all of the Satellite orbital calculations.
 // Contains Name, Line 1, Line 2, LLA, Array of "connected" Sats (sats in view)
 // https://en.wikipedia.org/wiki/Two-line_element_set
 type SimpleSatellite struct {
+	Id            int        `json:"id"`
 	Name          string     `json:"name"`
 	Tle1          string     `json:"-"`
 	Tle2          string     `json:"-"`
 	Lla           LatLongAlt `json:"position"`
 	MaxEA         float64    `json:"-"`
-	PerceivedSats []string   `json:"-"`
+	PerceivedSats []int      `json:"-"`
 }
 
 //lint:ignore U1000 Ignore unused function
@@ -42,6 +46,8 @@ func (s *SimpleSatellite) ToJson() string {
 // Must be called to populate data
 // http://celestrak.org/columns/v02n03/
 func InitSat(s *SimpleSatellite) {
+	s.Id = counter
+	counter = counter + 1
 	temp_sat := TLEToSat(s.Tle1, s.Tle2, GravityWGS84)
 	pos, _ := Propagate(temp_sat, 2022, 6, 1, 0, 0, 0) //units are km
 	s.Lla = ECIToLLA(pos, GSTimeFromDate(2022, 1, 1, 0, 0, 0))
@@ -125,15 +131,16 @@ func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 		//lint:ignore SA4006 Ignore unused value
 		dist = dist * 60 * 1.1515
 		//fmt.Println(angleToSatellite)
-		if earthAngleSatellite > s.MaxEA {
+		if earthAngleSatellite < s.MaxEA {
 			// check distance
 			satVisible = true
 		}
 		// if sat is visible add to satlist
 		if satVisible {
-			s.PerceivedSats = append(s.PerceivedSats, list_all_sats[i].Name)
+			s.PerceivedSats = append(s.PerceivedSats, list_all_sats[i].Id)
 		}
 	}
+	fmt.Println(len(s.PerceivedSats))
 }
 
 // func Parser reads a text file line by line to create and initialize simple satellites
@@ -203,4 +210,39 @@ func GenerateCzml(list_all_sats []SimpleSatellite) {
 	defer file.Close()
 
 	file.WriteString(strings.Join(strings.Fields(generatedJSON), ""))
+}
+
+func ConvertToCGraph(list_all_sats []SimpleSatellite) {
+	//for now assume it is sorted but better to double check
+	// assume id is ascending starting from 0
+	// assume id doesn't skip a number
+	g := new(graph.CGraph)
+	// iterate the list and build graph
+	for sat := 0; sat < len(list_all_sats); sat++ {
+		//add node from satellite
+		sat_id := g.AddNode()
+		if sat_id != sat {
+			fmt.Println("Sanity Check: Something went wrong mismatched Ids")
+		}
+	}
+	fmt.Println("Status: Nodes added")
+	fmt.Println(g.GetNrNodes())
+	for sat := 0; sat < len(list_all_sats); sat++ {
+		this_sat := list_all_sats[sat]
+		//iterate neighbors to add edges and weights
+		for j := 0; j < len(list_all_sats[sat].PerceivedSats); j++ {
+			other_sat := list_all_sats[sat].PerceivedSats[j]
+			distance := distance(this_sat.Lla.Latitude,
+				this_sat.Lla.Longitude,
+				list_all_sats[other_sat].Lla.Latitude,
+				list_all_sats[other_sat].Lla.Longitude)
+			// Need to check before adding edge to make sure it doesn't alread exist
+			// I think it will overwrite it anyway
+			g.AddEdgeBoth(this_sat.Id, list_all_sats[other_sat].Id, int(distance))
+		}
+	}
+	fmt.Println("Status: Edges added")
+	graph.BuildDotFromCGraph(g, "satgraph")
+	fmt.Println("Status: Dot Generated")
+
 }
