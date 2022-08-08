@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -16,9 +17,20 @@ import (
 
 var counter int = 0
 
+type Pair struct {
+	Id     int
+	Weight int
+}
+
+type PairList []Pair
+
+func (p PairList) Len() int           { return len(p) }
+func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p PairList) Less(i, j int) bool { return p[i].Weight < p[j].Weight }
+
 // type SimpleSatellite struct
 // SimpleSatellite is intended to abstract away all of the Satellite orbital calculations.
-// Contains Name, Line 1, Line 2, LLA, Array of "connected" Sats (sats in view)
+// Contains Id, Name, Line 1, Line 2, , MaxEA, LLA, Map of "connected" Sats ids to weights based on distance
 // https://en.wikipedia.org/wiki/Two-line_element_set
 type SimpleSatellite struct {
 	Id            int        `json:"id"`
@@ -27,7 +39,8 @@ type SimpleSatellite struct {
 	Tle2          string     `json:"-"`
 	Lla           LatLongAlt `json:"position"`
 	MaxEA         float64    `json:"-"`
-	PerceivedSats []int      `json:"-"`
+	PerceivedSats PairList   `json:"perception"`
+	MSTneighbors  PairList   `json:"mst"`
 }
 
 //lint:ignore U1000 Ignore unused function
@@ -48,6 +61,7 @@ func (s *SimpleSatellite) ToJson() string {
 func InitSat(s *SimpleSatellite) {
 	s.Id = counter
 	counter = counter + 1
+	s.PerceivedSats = make(PairList, 0)
 	temp_sat := TLEToSat(s.Tle1, s.Tle2, GravityWGS84)
 	pos, _ := Propagate(temp_sat, 2022, 6, 1, 0, 0, 0) //units are km
 	s.Lla = ECIToLLA(pos, GSTimeFromDate(2022, 1, 1, 0, 0, 0))
@@ -95,52 +109,25 @@ func CalculateElevationAngle(earthAngle float64, altitude float64) float64 {
 		ground_el = math.Acos(ea)
 	}
 	return ground_el
-
 }
 
 //This method has to be called on every satellite against every satellite to determine who can talk
 func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 
 	for i := 0; i < len(list_all_sats); i++ {
-		satVisible := false
 		//if i is self continue
 		if list_all_sats[i].Name == s.Name {
 			continue
 		}
-		//. check earth angle
-		lat1Rad := DEG2RAD * s.Lla.Latitude
-		lat2Rad := DEG2RAD * list_all_sats[i].Lla.Latitude
-		lon1Rad := DEG2RAD * s.Lla.Longitude
-		lon2Rad := DEG2RAD * list_all_sats[i].Lla.Longitude
-		// TODO: refactor to utility function findAngle() and findDistanceTwoPoints()
-		earthAngleSatellite := CalculateEA(lat1Rad, lon1Rad, lat2Rad, lon2Rad) * RAD2DEG
-		//elevationAngle := CalculateElevationAngle(earthAngleSatellite, s.Lla.Altitude)
-		theta := float64(lon1Rad - lon2Rad)
-		radtheta := float64(math.Pi * theta / 180)
 
-		dist := math.Sin(lat1Rad)*math.Sin(lat2Rad) + math.Cos(lat1Rad)*math.Cos(lat2Rad)*math.Cos(radtheta)
-		if dist > 1 {
-			dist = 1.0
-		}
-		if dist < 1 {
-			dist = -1.0
-		}
+		// is earth blocking view?
+		if !CalculateEarthOcclusion(s.Lla, list_all_sats[i].Lla) {
 
-		dist = math.Acos(dist)
-		dist = dist * 180 / math.Pi
-		//lint:ignore SA4006 Ignore unused value
-		dist = dist * 60 * 1.1515
-		//fmt.Println(angleToSatellite)
-		if earthAngleSatellite < s.MaxEA {
-			// check distance
-			satVisible = true
-		}
-		// if sat is visible add to satlist
-		if satVisible {
-			s.PerceivedSats = append(s.PerceivedSats, list_all_sats[i].Id)
+			s.PerceivedSats = append(s.PerceivedSats, Pair{i, int(math.Round(math.Abs(CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla))))})
 		}
 	}
-	fmt.Println(len(s.PerceivedSats))
+
+	sort.Sort(s.PerceivedSats)
 }
 
 // func Parser reads a text file line by line to create and initialize simple satellites
@@ -199,7 +186,9 @@ func GenerateCzml(list_all_sats []SimpleSatellite) {
 	generatedJSON += ":["
 	for i := 0; i < len(list_all_sats); i++ {
 		generatedJSON += list_all_sats[i].ToJson()
-		generatedJSON += ","
+		if i != len(list_all_sats)-1 {
+			generatedJSON += "," // Don't add if it is the last one
+		}
 	}
 	generatedJSON += "]}"
 
@@ -212,11 +201,11 @@ func GenerateCzml(list_all_sats []SimpleSatellite) {
 	file.WriteString(strings.Join(strings.Fields(generatedJSON), ""))
 }
 
-func ConvertToCGraph(list_all_sats []SimpleSatellite) {
+func ConvertToCGraph(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	//for now assume it is sorted but better to double check
 	// assume id is ascending starting from 0
 	// assume id doesn't skip a number
-	g := new(graph.CGraph)
+	g = new(graph.CGraph)
 	// iterate the list and build graph
 	for sat := 0; sat < len(list_all_sats); sat++ {
 		//add node from satellite
@@ -230,19 +219,26 @@ func ConvertToCGraph(list_all_sats []SimpleSatellite) {
 	for sat := 0; sat < len(list_all_sats); sat++ {
 		this_sat := list_all_sats[sat]
 		//iterate neighbors to add edges and weights
-		for j := 0; j < len(list_all_sats[sat].PerceivedSats); j++ {
-			other_sat := list_all_sats[sat].PerceivedSats[j]
-			distance := distance(this_sat.Lla.Latitude,
-				this_sat.Lla.Longitude,
-				list_all_sats[other_sat].Lla.Latitude,
-				list_all_sats[other_sat].Lla.Longitude)
+		for key, element := range list_all_sats[sat].PerceivedSats {
+			fmt.Println("Key:", key, "=>", "Element:", element)
+			other_sat := key
 			// Need to check before adding edge to make sure it doesn't alread exist
 			// I think it will overwrite it anyway
-			g.AddEdgeBoth(this_sat.Id, list_all_sats[other_sat].Id, int(distance))
+			g.AddEdgeBoth(this_sat.Id, list_all_sats[other_sat].Id, element.Weight)
 		}
 	}
 	fmt.Println("Status: Edges added")
-	graph.BuildDotFromCGraph(g, "satgraph")
-	fmt.Println("Status: Dot Generated")
+	return g
+}
 
+func GenerateMST(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
+	g = ConvertToCGraph(list_all_sats)
+	g.BuildMSTBoruvka()
+	fmt.Println("FINAL STEP")
+	var mstGraph = graph.PrintMSTSorted()
+	for i := 0; i < len(mstGraph); i++ {
+		//[[0 1 45] [0 2 48]]
+		list_all_sats[mstGraph[i][0]].MSTneighbors = append(list_all_sats[mstGraph[i][0]].MSTneighbors, Pair{mstGraph[i][0], mstGraph[i][1]})
+	}
+	return g
 }

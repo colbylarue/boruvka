@@ -126,13 +126,13 @@ func ThetaG_JD(jday float64) (ret float64) {
 
 // Convert latitude, longitude and altitude(km) into equivalent Earth Centered Intertial coordinates(km)
 // Reference: The 1992 Astronomical Almanac, page K11.
-func LLAToECI(obsCoords LatLong, alt, jday float64) (eciObs Vector3) {
+func LLAToECI(obsCoords LatLongAlt, jday float64) (eciObs Vector3) {
 	re := 6378.137
 	theta := math.Mod(ThetaG_JD(jday)+obsCoords.Longitude, TWOPI)
-	r := (re + alt) * math.Cos(obsCoords.Latitude)
+	r := (re + obsCoords.Altitude) * math.Cos(obsCoords.Latitude)
 	eciObs.X = r * math.Cos(theta)
 	eciObs.Y = r * math.Sin(theta)
-	eciObs.Z = (re + alt) * math.Sin(obsCoords.Latitude)
+	eciObs.Z = (re + obsCoords.Altitude) * math.Sin(obsCoords.Latitude)
 	return
 }
 
@@ -148,9 +148,9 @@ func ECIToECEF(eciCoords Vector3, gmst float64) (ecfCoords Vector3) {
 // Calculate look angles for given satellite position and observer position
 // obsAlt in km
 // Reference: http://celestrak.com/columns/v02n02/
-func ECIToLookAngles(eciSat Vector3, obsCoords LatLong, obsAlt, jday float64) (lookAngles LookAngles) {
+func ECIToLookAngles(eciSat Vector3, obsCoords LatLongAlt, obsAlt, jday float64) (lookAngles LookAngles) {
 	theta := math.Mod(ThetaG_JD(jday)+obsCoords.Longitude, 2*math.Pi)
-	obsPos := LLAToECI(obsCoords, obsAlt, jday)
+	obsPos := LLAToECI(obsCoords, jday)
 
 	rx := eciSat.X - obsPos.X
 	ry := eciSat.Y - obsPos.Y

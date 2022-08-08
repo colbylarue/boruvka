@@ -123,7 +123,7 @@ func BuildDotFromCGraph(g *CGraph, outfile string) *dot.Graph {
 			break
 		} else {
 			//fmt.Printf("%v file exist\n", filename)
-			filename = filename + fmt.Sprint(i) + ".dot"
+			filename = "graph_snapshot_" + fmt.Sprint(i) + ".dot"
 		}
 	}
 
@@ -131,7 +131,7 @@ func BuildDotFromCGraph(g *CGraph, outfile string) *dot.Graph {
 	newFilePath := filepath.FromSlash(path)
 	file, err := os.Create(newFilePath)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err) I don't care about the error :) 
 	}
 	defer file.Close()
 
