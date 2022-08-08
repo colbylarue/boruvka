@@ -238,7 +238,7 @@ func GenerateMST(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	var mstGraph = graph.PrintMSTSorted()
 	for i := 0; i < len(mstGraph); i++ {
 		//[[0 1 45] [0 2 48]]
-		list_all_sats[mstGraph[i][0]].MSTneighbors = append(list_all_sats[mstGraph[i][0]].MSTneighbors, Pair{mstGraph[i][0], mstGraph[i][1]})
+		list_all_sats[mstGraph[i][0]].MSTneighbors = append(list_all_sats[mstGraph[i][0]].MSTneighbors, Pair{mstGraph[i][1], mstGraph[i][2]})
 	}
 	return g
 }
