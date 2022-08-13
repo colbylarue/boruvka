@@ -39,7 +39,7 @@ type SimpleSatellite struct {
 	Tle2          string     `json:"-"`
 	Lla           LatLongAlt `json:"position"`
 	MaxEA         float64    `json:"-"`
-	PerceivedSats PairList   `json:"perception"`
+	PerceivedSats PairList   `json:"-"`
 	MSTneighbors  PairList   `json:"mst"`
 }
 
