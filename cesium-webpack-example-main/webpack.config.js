@@ -5,6 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const FastJson = require('fast-json');
 
 module.exports = {
     context: __dirname,
@@ -35,7 +36,7 @@ module.exports = {
             use: [ 'url-loader' ]
         }, {
             test: /\.json$/,
-            use: [ 'raw-loader' ]
+            use: [ 'json-loader' ]
         }]
     },
     plugins: [
@@ -49,7 +50,7 @@ module.exports = {
                 { from: path.join(cesiumSource, 'Assets'), to: 'Assets' },
                 { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' },
                 { from: path.join('..','out','data.json'), to: 'out', force: true},
-                { from: path.join('src', 'satellite.glb'), to: 'models', force: true}
+                // { from: path.join('src', 'satellite.glb'), to: 'models', force: true}
             ]
         }),
         new webpack.DefinePlugin({
