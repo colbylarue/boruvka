@@ -131,7 +131,7 @@ func BuildDotFromCGraph(g *CGraph, outfile string) *dot.Graph {
 	newFilePath := filepath.FromSlash(path)
 	file, err := os.Create(newFilePath)
 	if err != nil {
-		//fmt.Println(err) I don't care about the error :) 
+		//fmt.Println(err) // I don't care about the error :)
 	}
 	defer file.Close()
 
@@ -139,7 +139,7 @@ func BuildDotFromCGraph(g *CGraph, outfile string) *dot.Graph {
 	return gdot
 }
 
-func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
+func GraphBuilderCsv(csvFilePath string, buildDot bool) (c *CGraph, d *dot.Graph) {
 	g := new(CGraph)
 	gdot := dot.NewGraph("Example Graph")
 	gdot.SetType(dot.GRAPH)
@@ -181,10 +181,11 @@ func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
 			//create nodes in graph id starts at 0
 			for i := 0; i < numOfNodes; i++ {
 				g.AddNode()
-
-				ndot := dot.NewNode(fmt.Sprint(i))
-				nodes = append(nodes, *ndot)
-				gdot.AddNode(ndot)
+				if buildDot {
+					ndot := dot.NewNode(fmt.Sprint(i))
+					nodes = append(nodes, *ndot)
+					gdot.AddNode(ndot)
+				}
 			}
 			continue
 		} else if i == 1 {
@@ -204,10 +205,12 @@ func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
 				w, _ := strconv.Atoi(rec[2])
 				g.AddEdgeBoth(n1, n2, w)
 
-				e1 := dot.NewEdge(&nodes[n1], &nodes[n2])
-				e1.Set("weight", fmt.Sprint(w))
-				e1.Set("label", fmt.Sprint(w))
-				gdot.AddEdge(e1)
+				if buildDot {
+					e1 := dot.NewEdge(&nodes[n1], &nodes[n2])
+					e1.Set("weight", fmt.Sprint(w))
+					e1.Set("label", fmt.Sprint(w))
+					gdot.AddEdge(e1)
+				}
 			}
 		}
 		fmt.Println(fieldMap)
@@ -216,3 +219,33 @@ func GraphBuilderCsv(csvFilePath string) (c *CGraph, d *dot.Graph) {
 
 	return g, gdot
 }
+
+// func Parser reads a text file line by line to create and initialize simple satellites
+// Line 0 : Name
+// Line 1 : Line 1 orbitals
+// Line 2 : Line 2 orbitals
+//func GraphBuilderTxt(filepath string, weights bool) (c *CGraph) {
+//	g := new(CGraph)
+//
+//	file, err := os.Open(filepath)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	defer file.Close()
+//
+//	// TODO: Make this better, add scanner error checking, corrupt data read and filter, etc
+//	scanner := bufio.NewScanner(file)
+//	for scanner.Scan() {
+//		s := scanner.Text()
+//		sArr := strings.Split(s, "	")
+//		n1, _ := strconv.Atoi(sArr[0])
+//		n2, _ := strconv.Atoi(sArr[1])
+//		w := 0
+//		if weights {
+//			w, _ = strconv.Atoi(sArr[2])
+//		}
+//
+//		g.AddNodeWithId(n1)
+//	}
+//	return g
+//}

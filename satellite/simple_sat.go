@@ -180,6 +180,7 @@ func Parser(filepath string) []SimpleSatellite {
 	for n := range satlist {
 		satlist[n].Discovery(satlist)
 	}
+	return satlist
 }
 
 func GenerateCzml(list_all_sats []SimpleSatellite) {

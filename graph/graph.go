@@ -12,6 +12,8 @@ import (
 
 var Tree = make(map[[2]int][3]int) //Holds the tree edges, in the "2-3" format
 var ContractionPairsSlice = make([][2]int, 0)
+var id2id = make(map[int]int)
+var backId2id = make(map[int]int)
 
 //var visited = make(map[int]int)
 
@@ -50,7 +52,31 @@ func max(a, b int) int {
 
 // AddNode : adds a new node to the Graph
 func (g *CGraph) AddNode() (id int) {
+
 	id = len(g.nodes)
+	g.nodes = append(g.nodes, &CGraphNode{
+		id:      id,
+		edges:   make(map[[2]int][3]int),
+		minEdge: [5]int{-1, -1, -1, -1, -1},
+	})
+	g.nrNodes = len(g.nodes)
+	return
+}
+
+// AddNode : adds a new node to the Graph
+func (g *CGraph) AddNodeWithId(inId int) (id int) {
+	value, isMapContainsKey := id2id[inId]
+	//isMapContainsKey will be true if the key contains in goMap
+	if isMapContainsKey {
+		//key exist
+		fmt.Println("Map does contains the id. break.")
+		return value
+	}
+	//key does not exist
+	fmt.Println("Map does not contains the id, creating node")
+	id = len(g.nodes)
+	id2id[inId] = id
+	backId2id[id] = inId
 	g.nodes = append(g.nodes, &CGraphNode{
 		id:      id,
 		edges:   make(map[[2]int][3]int),

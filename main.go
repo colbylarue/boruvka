@@ -43,7 +43,7 @@ func main() {
 	}
 
 	//########## Initialize graph ######################
-	//g, gdot := graph.GraphBuilderCsv("data/graph02_12_nodes_no_BOM.csv")
+	//g, gdot := graph.GraphBuilderCsv("data/roadNet-TX.csv", false)
 	////generate dot file
 	//file, err := os.Create("graph.dot")
 	//if err != nil {
@@ -51,14 +51,14 @@ func main() {
 	//}
 	//defer file.Close()
 	//file.WriteString(gdot.String())
-
-	//Test building Dot from CGraph
-	//new_g := graph.BuildDotFromCGraph(g, "")
-	//fmt.Println(new_g.String())
+	//g.BuildMSTBoruvka()
+	////Test building Dot from CGraph
+	////new_g := graph.BuildDotFromCGraph(g, "")
+	//fmt.Println(graph.PrintMSTSorted())
 	// This method is slow TODO: investigate speedup
-	Satellites := satellite.Parser("satellite/StarlinkDB.txt")
+	Satellites := satellite.Parser("satellite/starlink_data.txt")
 	satellite.GenerateMST(Satellites)
 	// do this after the MST so the data is populated
 	satellite.GenerateCzml(Satellites)
-
+	fmt.Println("DONE")
 }
