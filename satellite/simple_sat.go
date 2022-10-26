@@ -119,6 +119,10 @@ func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 		if list_all_sats[i].Name == s.Name {
 			continue
 		}
+		// satellites can really only communicate out a certain distance
+		if math.Round(math.Abs(CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla))) >= 10000 {
+			continue
+		}
 
 		// is earth blocking view?
 		if !CalculateEarthOcclusion(s.Lla, list_all_sats[i].Lla) {
@@ -176,7 +180,6 @@ func Parser(filepath string) []SimpleSatellite {
 	for n := range satlist {
 		satlist[n].Discovery(satlist)
 	}
-	return satlist
 }
 
 func GenerateCzml(list_all_sats []SimpleSatellite) {
