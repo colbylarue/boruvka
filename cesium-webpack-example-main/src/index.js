@@ -67,9 +67,9 @@ readTextFile("out/data.json", function (text) {
     // get only the first 8 connected sats for optimization reasons
     // this should be a sorted list by value of distance. 
     var max = data.entities[i].perception.length;
-    if (max > 8) {
-      max = 8;
-    }
+    //if (max > 8) {
+    //  max = 8;
+    //}
     for (var j = 0; j < max; j++) {
       //console.log(data.entities[i].perception[j]["Id"] + " -> " + //data.entities[i].perception[j]["Weight"])
       var other_id = data.entities[i].perception[j]["Id"]
@@ -93,24 +93,24 @@ readTextFile("out/data.json", function (text) {
         },
       });
     }
-    if ( mstdata.entities[i].mst == null ){
+    if ( data.entities[i].mst == null ){
       continue
     }
-    var max = mstdata.entities[i].mst.length;
+    var max = data.entities[i].mst.length;
     for (var j = 0; j < max; j++) {
       //console.log(mstdata.entities[i].mst[j]["Id"] + " -> " + mstdata.entities[i].mst[j]["Weight"])
-      var other_id = mstdata.entities[i].mst[j]["Id"]
+      var other_id = data.entities[i].mst[j]["Id"]
       const redLine = viewer.entities.add({
         name:
-        mstdata.entities[i].name + " To " + data.entities[other_id].name,
+        data.entities[i].name + " To " + data.entities[other_id].name,
         polyline: {
           positions: Cartesian3.fromDegreesArrayHeights([
-            mstdata.entities[other_id].position.Longitude * 180 / Math.PI,
-            mstdata.entities[other_id].position.Latitude * 180 / Math.PI,
-            mstdata.entities[other_id].position.Altitude * 1000, //kilometers to meters 
-            mstdata.entities[i].position.Longitude * 180 / Math.PI,
-            mstdata.entities[i].position.Latitude * 180 / Math.PI,
-            mstdata.entities[i].position.Altitude * 1000 //kilometers to meters ,
+            data.entities[other_id].position.Longitude * 180 / Math.PI,
+            data.entities[other_id].position.Latitude * 180 / Math.PI,
+            data.entities[other_id].position.Altitude * 1000, //kilometers to meters 
+            data.entities[i].position.Longitude * 180 / Math.PI,
+            data.entities[i].position.Latitude * 180 / Math.PI,
+            data.entities[i].position.Altitude * 1000 //kilometers to meters ,
           ]),
           width: 1,
           arcType: ArcType.NONE,

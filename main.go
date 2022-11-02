@@ -56,7 +56,7 @@ func main() {
 	////new_g := graph.BuildDotFromCGraph(g, "")
 	//fmt.Println(graph.PrintMSTSorted())
 	// This method is slow TODO: investigate speedup
-	Satellites := satellite.Parser("satellite/starlink_data.txt")
+	Satellites := satellite.Parser("satellite/StarlinkDB.txt")
 	satellite.GenerateMST(Satellites)
 	// do this after the MST so the data is populated
 	satellite.GenerateCzml(Satellites)

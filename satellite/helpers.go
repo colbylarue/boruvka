@@ -119,25 +119,40 @@ func parseInt(strIn string) (ret int64) {
 }
 
 func CalculateEarthOcclusion(p1, p2 LatLongAlt) bool {
+	wgs84a := 6378137.0
+	wgs84b := 6378137.0
+	wgs84c := 6356752.314245
 	//convert to eci:
 	var pos1 = LLAToECI(p1, JDay(2022, 1, 1, 0, 0, 0))
 	var coords1 = ECIToECEF(pos1, ThetaG_JD(JDay(2022, 1, 1, 0, 0, 0)))
 	var pos2 = LLAToECI(p2, JDay(2022, 1, 1, 0, 0, 0))
 	var coords2 = ECIToECEF(pos2, ThetaG_JD(JDay(2022, 1, 1, 0, 0, 0)))
+
+	// make it a unit vector
+	coords2.X = coords2.X / math.Abs(math.Sqrt(coords2.X*coords2.X+coords2.Y*coords2.Y+coords2.Z*coords2.Z))
+	coords2.Y = coords2.Y / math.Abs(math.Sqrt(coords2.X*coords2.X+coords2.Y*coords2.Y+coords2.Z*coords2.Z))
+	coords2.Y = coords2.Y / math.Abs(math.Sqrt(coords2.X*coords2.X+coords2.Y*coords2.Y+coords2.Z*coords2.Z))
 	//calc intermediate terms
-	var a = math.Pow((coords2.X-coords1.X), 2) + math.Pow((coords2.Y-coords1.Y), 2) + math.Pow((coords2.Z-coords1.Z), 2)
-	var b = 2.0 * ((coords2.X-coords1.X)*(coords1.X-0.0) + (coords2.Y-coords1.Y)*(coords1.Y-0.0) + (coords2.Z-coords1.Z)*(coords1.Z-0.0))
-	var c = 0.0 + math.Pow(coords1.X, 2) + math.Pow(coords1.Y, 2) + math.Pow(coords1.Z, 2) - RADIUS_EARTH_METERS*RADIUS_EARTH_METERS
-	var discriminant = b*b - 4*a*c
-	if discriminant < 0.0 || a == 0.0 {
+
+	value := -math.Pow(wgs84a, 2)*math.Pow(wgs84b, 2)*coords1.X*coords1.Z -
+		math.Pow(wgs84a, 2)*math.Pow(wgs84b, 2)*coords2.Y*coords1.Y -
+		math.Pow(wgs84b, 2)*math.Pow(wgs84c, 2)*coords2.X*coords1.X
+	radical := math.Pow(wgs84a, 2)*math.Pow(wgs84b, 2)*math.Pow(coords2.Z, 2) +
+		math.Pow(wgs84a, 2)*math.Pow(wgs84c, 2)*math.Pow(coords2.Y, 2) - math.Pow(wgs84a, 2)*math.Pow(coords2.Y, 2)*math.Pow(coords1.Z, 2) +
+		2*math.Pow(wgs84a, 2)*coords2.Y*coords2.Z*coords1.Y*coords1.Z - math.Pow(wgs84a, 2)*math.Pow(coords2.Z, 2)*math.Pow(coords1.Y, 2) +
+		math.Pow(wgs84b, 2)*math.Pow(wgs84c, 2)*math.Pow(coords2.X, 2) - math.Pow(wgs84b, 2)*math.Pow(coords2.X, 2)*math.Pow(coords1.Z, 2) +
+		2*math.Pow(wgs84b, 2)*coords2.X*coords2.Z*coords1.X*coords1.Z - math.Pow(wgs84b, 2)*math.Pow(coords2.Z, 2)*math.Pow(coords1.X, 2) -
+		math.Pow(wgs84c, 2)*math.Pow(coords2.X, 2)*math.Pow(coords1.Y, 2) + 2*math.Pow(wgs84c, 2)*coords2.X*coords2.Y*coords1.X*coords1.Y -
+		math.Pow(wgs84c, 2)*math.Pow(coords2.Y, 2)*math.Pow(coords1.X, 2)
+	magnitude := math.Pow(wgs84a, 2)*math.Pow(wgs84b, 2)*math.Pow(coords2.Z, 2) + math.Pow(wgs84a, 2)*math.Pow(wgs84c, 2)*math.Pow(coords2.Y, 2) +
+		math.Pow(wgs84b, 2)*math.Pow(wgs84c, 2)*math.Pow(coords2.X, 2)
+
+	if radical < 0 {
+		// the line of sight vector does not point toward the earth
 		return false
 	}
-
-	if (1.0 >= (-b+math.Sqrt(discriminant))/(2*a) && (-b+math.Sqrt(discriminant))/(2*a) >= 0.0) ||
-		(1.0 >= (-b-math.Sqrt(discriminant))/(2*a) && (-b-math.Sqrt(discriminant))/(2*a) >= 0.0) {
-		return true
-	}
-	return false
+	d := (value - wgs84a*wgs84b*wgs84c*math.Sqrt(radical)) / magnitude
+	return (d >= 0)
 }
 
 func CalculateDistanceFromTwoLLA(p1, p2 LatLongAlt) float64 {
@@ -145,7 +160,7 @@ func CalculateDistanceFromTwoLLA(p1, p2 LatLongAlt) float64 {
 	var coords1 = ECIToECEF(pos1, ThetaG_JD(JDay(2022, 1, 1, 0, 0, 0)))
 	var pos2 = LLAToECI(p2, JDay(2022, 1, 1, 0, 0, 0))
 	var coords2 = ECIToECEF(pos2, ThetaG_JD(JDay(2022, 1, 1, 0, 0, 0)))
-	var calc = (coords2.X-coords1.X)*(coords2.X-coords1.X+coords2.Y-coords1.Y)*(coords2.Y-coords1.Y+coords2.Z-coords1.Z)*coords2.Z - coords1.Z
+	var calc = (coords2.X-coords1.X)*(coords2.X-coords1.X) + (coords2.Y-coords1.Y)*(coords2.Y-coords1.Y) + (coords2.Z-coords1.Z)*(coords2.Z-coords1.Z)
 	var dist = math.Sqrt(math.Abs(calc))
 	return dist
 }

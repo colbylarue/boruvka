@@ -8,12 +8,11 @@ package graph
 import (
 	"fmt"
 	"sort"
+	"time"
 )
 
 var Tree = make(map[[2]int][3]int) //Holds the tree edges, in the "2-3" format
 var ContractionPairsSlice = make([][2]int, 0)
-var id2id = make(map[int]int)
-var backId2id = make(map[int]int)
 
 //var visited = make(map[int]int)
 
@@ -54,29 +53,6 @@ func max(a, b int) int {
 func (g *CGraph) AddNode() (id int) {
 
 	id = len(g.nodes)
-	g.nodes = append(g.nodes, &CGraphNode{
-		id:      id,
-		edges:   make(map[[2]int][3]int),
-		minEdge: [5]int{-1, -1, -1, -1, -1},
-	})
-	g.nrNodes = len(g.nodes)
-	return
-}
-
-// AddNode : adds a new node to the Graph
-func (g *CGraph) AddNodeWithId(inId int) (id int) {
-	value, isMapContainsKey := id2id[inId]
-	//isMapContainsKey will be true if the key contains in goMap
-	if isMapContainsKey {
-		//key exist
-		fmt.Println("Map does contains the id. break.")
-		return value
-	}
-	//key does not exist
-	fmt.Println("Map does not contains the id, creating node")
-	id = len(g.nodes)
-	id2id[inId] = id
-	backId2id[id] = inId
 	g.nodes = append(g.nodes, &CGraphNode{
 		id:      id,
 		edges:   make(map[[2]int][3]int),
@@ -142,6 +118,16 @@ func (g *CGraph) Nodes() [][2]int {
 		nodes[i] = [2]int{i, g.nodes[i].id}
 	}
 	return nodes
+}
+
+func t_decor(f func(g *CGraph)) func(g *CGraph) {
+	//wrapper function
+	return func(g *CGraph) {
+		start := time.Now()
+		f(g)
+		elapsed := time.Since(start)
+		fmt.Println("==elapsed time==", elapsed)
+	}
 }
 
 //Prints a snapshot of the graph
@@ -402,18 +388,15 @@ func (g *CGraph) BuildMSTBoruvka() {
 		//This is a process equivalent to Pointer-jumping. We create a slice
 		//of leaves (terminal nodes) in leafSlice, and contract those
 		for LenContractionPairsSlice() > 0 {
-
 			//leafSlice has a 3rd position that remembers the pair index from
 			//ContractionsPairsSlice, to allow fast "deletion"
 			leafSlice := make([][3]int, 0)
-
 			//Use ContractionPairs to find the set (slice) of "leaf" pairs for
 			//contraction: pairs with one node (or both) appearing only once in
 			//ContractionPairsSlice. Unlike ContractionPairsSlice, leafSlice is
 			//ordered: The first node will be contracted in the second.
 			for i, v := range ContractionPairsSlice {
 				fmt.Println("i = ", i, "; v = ", v)
-
 				//#### Optimization: count v[0] and v[1] in the same loop, then
 				//examine the counters and decide.
 				if OnlyOnceInSlice(v[0], ContractionPairsSlice) {
@@ -422,6 +405,7 @@ func (g *CGraph) BuildMSTBoruvka() {
 					leafSlice = append(leafSlice, [3]int{v[1], v[0], i})
 				} //else do nothing - if they both appear more than once, it's not a leaf edge
 			}
+
 			fmt.Println("\n############### leafSlice ################\n", leafSlice)
 			//Perform a round of leaf contractions according to leafSlice
 			if len(leafSlice) > 0 {

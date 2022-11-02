@@ -119,8 +119,10 @@ func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 		if list_all_sats[i].Name == s.Name {
 			continue
 		}
+		var d_m = CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla)
+
 		// satellites can really only communicate out a certain distance
-		if math.Round(math.Abs(CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla))) >= 10000 {
+		if math.Round(math.Abs(d_m)) >= 10000 {
 			continue
 		}
 
