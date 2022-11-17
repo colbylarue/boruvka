@@ -120,16 +120,17 @@ func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 			continue
 		}
 		var d_m = CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla)
-
+		var eo = CalculateEarthOcclusion(list_all_sats[i].Lla, s.Lla)
+		fmt.Println(eo)
 		// satellites can really only communicate out a certain distance
 		if math.Round(math.Abs(d_m)) >= 10000 {
 			continue
 		}
 
-		// is earth blocking view?
-		if !CalculateEarthOcclusion(s.Lla, list_all_sats[i].Lla) {
+		// is earth blocking view? if d_m == -1 then the earth is not occluding the region
+		if d_m < 0 {
 
-			s.PerceivedSats = append(s.PerceivedSats, Pair{i, int(math.Round(math.Abs(CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla))))})
+			s.PerceivedSats = append(s.PerceivedSats, Pair{i, int(math.Round(d_m))})
 		}
 	}
 

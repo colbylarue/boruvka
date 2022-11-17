@@ -293,7 +293,9 @@ func Propagate(sat Satellite, year int, month int, day, hours, minutes, seconds 
 	return sgp4(&sat, m)
 }
 
-// this procedure is the sgp4 prediction model from space command. this is an updated and combined version of sgp4 and sdp4, which were originally published separately in spacetrack report #3. this version follows the methodology from the aiaa paper (2006) describing the history and development of the code.
+// this procedure is the sgp4 prediction model from space command. this is an updated and combined version of sgp4 and sdp4,
+// which were originally published separately in spacetrack report #3. this version follows the methodology from the aiaa
+// paper (2006) describing the history and development of the code.
 // satrec - initialized Satellite struct from sgp4init
 // tsince - time since epoch in minutes
 func sgp4(satrec *Satellite, tsince float64) (position, velocity Vector3) {

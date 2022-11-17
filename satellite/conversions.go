@@ -128,12 +128,27 @@ func ThetaG_JD(jday float64) (ret float64) {
 // Reference: The 1992 Astronomical Almanac, page K11.
 func LLAToECI(obsCoords LatLongAlt, jday float64) (eciObs Vector3) {
 	re := 6378.137
-	theta := math.Mod(ThetaG_JD(jday)+obsCoords.Longitude, TWOPI)
-	r := (re + obsCoords.Altitude) * math.Cos(obsCoords.Latitude)
-	eciObs.X = r * math.Cos(theta)
-	eciObs.Y = r * math.Sin(theta)
-	eciObs.Z = (re + obsCoords.Altitude) * math.Sin(obsCoords.Latitude)
+	theta := math.Mod(ThetaG_JD(jday)+obsCoords.Longitude*DEG2RAD, TWOPI)
+	r := (re + obsCoords.Altitude) * math.Cos(obsCoords.Latitude*DEG2RAD)
+	eciObs.X = r * math.Cos(theta) * 1000
+	eciObs.Y = r * math.Sin(theta) * 1000
+	eciObs.Z = (re + obsCoords.Altitude) * math.Sin(obsCoords.Latitude*DEG2RAD)
 	return
+}
+
+/* ToECEF takes the latitude, longitude, elevation list and
+   returns three cartesian coordinates x, y, z */
+func LLAToECEF(lat, lon, alt float64) (float64, float64, float64) {
+	a := 6378137.0
+	e := 8.1819190842622e-2
+
+	N := a / math.Sqrt(1-math.Pow(e, 2)*math.Pow(math.Sin(lat), 2))
+
+	x := (N + alt) * math.Cos(lat) * math.Cos(lon) / 1000
+	y := (N + alt) * math.Cos(lat) * math.Sin(lon) / 1000
+	z := ((1-math.Pow(e, 2))*N + alt) * math.Sin(lat) / 1000
+
+	return x, y, z
 }
 
 // Convert Earth Centered Intertial coordinates into Earth Cenetered Earth Final coordinates

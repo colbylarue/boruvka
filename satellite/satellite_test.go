@@ -17,6 +17,36 @@ func TestSimpleSatellite(t *testing.T) {
 	})
 }
 
+func TestLLAtoECEF(t *testing.T) {
+	t.Run("Earth Occlusion Test", func(t *testing.T) {
+		lla1 := LatLongAlt{Latitude: 0, Longitude: 0, Altitude: 0}
+		lla2 := LatLongAlt{Latitude: 1, Longitude: 1, Altitude: 500}
+
+		var x, y, z = LLAToECEF(lla1.Latitude*DEG2RAD, lla1.Longitude*DEG2RAD, lla1.Altitude)
+
+		var a, b, c = LLAToECEF(lla2.Latitude*DEG2RAD, lla2.Longitude*DEG2RAD, lla2.Altitude)
+
+		if x != 6378.137 {
+			t.Errorf("Expected x to be 6378.63; but got %f", x)
+		}
+		if y != 0.0 {
+			t.Errorf("Expected y to be 0; but got %f", y)
+		}
+		if z != 0.0 {
+			t.Errorf("Expected z to be 0; but got %f", z)
+		}
+		if a != 6376.7006539387885 {
+			t.Errorf("Expected x to be 6378.63; but got %f", a)
+		}
+		if b != 111.30572394230909 {
+			t.Errorf("Expected y to be 0; but got %f", b)
+		}
+		if c != 110.57750102778527 {
+			t.Errorf("Expected z to be 0; but got %f", c)
+		}
+	})
+}
+
 func TestParseTLE(t *testing.T) {
 	t.Run("Parse TLE Test", func(t *testing.T) {
 		// ISS#25544
