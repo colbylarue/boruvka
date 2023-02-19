@@ -15,7 +15,7 @@ function readTextFile(file, callback) {
 }
 var data;
 //usage:
-readTextFile("out/data_perception.json", function (text) {
+readTextFile("out/data_mst.json", function (text) {
   data = JSON.parse(text);
   console.log(data);
   // Your access token can be found at: https://cesium.com/ion/tokens.
@@ -33,8 +33,8 @@ readTextFile("out/data_perception.json", function (text) {
 
 
   //parse json entity data
-  //var mstdata = JSON.parse(minst)
-  //console.log(data.entities);
+  //var mstdata = JSON.parse("data_mst.txt")
+  //console.log(mstdata.entities);
 
   var heading = Math.toRadians(0);
   var pitch = 0;
@@ -44,9 +44,9 @@ readTextFile("out/data_perception.json", function (text) {
     //console.log(data.entities[i].name);
 
     var pos = Cartesian3.fromDegrees(
-      data.entities[i].pos.Longitude,
-      data.entities[i].pos.Latitude,
-      data.entities[i].pos.Altitude * 1000 //kilometers to meters 
+      data.entities[i].pos.Lon,
+      data.entities[i].pos.Lat,
+      data.entities[i].pos.Alt * 1000 //kilometers to meters 
     );
 
     var hpr = new HeadingPitchRoll(heading, pitch, roll);
@@ -68,59 +68,60 @@ readTextFile("out/data_perception.json", function (text) {
   for (var i = 0; i < data.entities.length; i++) {
     // get only the first 8 connected sats for optimization reasons
     // this should be a sorted list by value of distance. 
-    var max = data.entities[i].percept.length;
-    //if (max > 20) {
-    //  max = 20;
+
+    //var max = data.entities[i].percept.length;
+    ////if (max > 20) {
+    ////  max = 20;
+    ////}
+    //for (var j = 0; j < max; j++) {
+    //  //console.log(data.entities[i].perception[j]["Id"] + " -> " + //data.entities[i].perception[j]["Weight"])
+    //  var other_id = data.entities[i].percept[j]["Id"]
+    //  const greenLine = viewer.entities.add({
+    //    name:
+    //      data.entities[i].name + " <---> " + data.entities[other_id].name + ": dist=" + data.entities[i].percept[j]["Weight"],
+    //    polyline: {
+    //      positions: Cartesian3.fromDegreesArrayHeights([
+    //        data.entities[other_id].pos.Lon,
+    //        data.entities[other_id].pos.Lat,
+    //        data.entities[other_id].pos.Alt * 1000, //kilometers to meters 
+    //        data.entities[i].pos.Lon,
+    //        data.entities[i].pos.Lat,
+    //        data.entities[i].pos.Alt * 1000 //kilometers to //meters ,
+    //      ]),
+    //      width: 1,
+    //      arcType: ArcType.NONE,
+    //      material: new PolylineDashMaterialProperty({
+    //        color: Color.GREEN,
+    //      })
+    //    },
+    //  });
     //}
-    for (var j = 0; j < max; j++) {
-      //console.log(data.entities[i].perception[j]["Id"] + " -> " + //data.entities[i].perception[j]["Weight"])
-      var other_id = data.entities[i].percept[j]["Id"]
-      const greenLine = viewer.entities.add({
-        name:
-          data.entities[i].name + " <---> " + data.entities[other_id].name + ": dist=" + data.entities[i].percept[j]["Weight"],
-        polyline: {
-          positions: Cartesian3.fromDegreesArrayHeights([
-            data.entities[other_id].pos.Longitude,
-            data.entities[other_id].pos.Latitude,
-            data.entities[other_id].pos.Altitude * 1000, //kilometers to meters 
-            data.entities[i].pos.Longitude,
-            data.entities[i].pos.Latitude,
-            data.entities[i].pos.Altitude * 1000 //kilometers to //meters ,
-          ]),
-          width: 1,
-          arcType: ArcType.NONE,
-          material: new PolylineDashMaterialProperty({
-            color: Color.GREEN,
-          })
-        },
-      });
+    if ( data.entities[i].mst == null ){
+       continue
     }
-    // if ( data.entities[i].mst == null ){
-    //   continue
-    // }
-    /* var max = data.entities[i].mst.length;
+    var max = data.entities[i].mst.length;
     for (var j = 0; j < max; j++) {
-      //console.log(mstdata.entities[i].mst[j]["Id"] + " -> " + mstdata.entities[i].mst[j]["Weight"])
+      console.log(data.entities[i].mst[j]["Id"] + " -> " + data.entities[i].mst[j]["Weight"])
       var other_id = data.entities[i].mst[j]["Id"]
       const redLine = viewer.entities.add({
         name:
         data.entities[i].name + " To " + data.entities[other_id].name,
         polyline: {
           positions: Cartesian3.fromDegreesArrayHeights([
-            data.entities[other_id].pos.Longitude * 180 / Math.PI,
-            data.entities[other_id].pos.Latitude * 180 / Math.PI,
-            data.entities[other_id].pos.Altitude * 1000, //kilometers to meters 
-            data.entities[i].pos.Longitude * 180 / Math.PI,
-            data.entities[i].pos.Latitude * 180 / Math.PI,
-            data.entities[i].pos.Altitude * 1000 //kilometers to meters ,
+            data.entities[other_id].pos.Lon,
+            data.entities[other_id].pos.Lat,
+            data.entities[other_id].pos.Alt * 1000, //kilometers to meters 
+            data.entities[i].pos.Lon,
+            data.entities[i].pos.Lat,
+            data.entities[i].pos.Alt * 1000 //kilometers to meters ,
           ]),
-          width: 1,
+          width: 3,
           arcType: ArcType.NONE,
           material: new PolylineDashMaterialProperty({
             color: Color.RED,
           })
         },
       });
-    } */
+    }
   } 
 });

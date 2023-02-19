@@ -50,6 +50,8 @@ module.exports = {
                 { from: path.join(cesiumSource, 'Assets'), to: 'Assets' },
                 { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' },
                 { from: path.join('..','out','data_perception.json'), to: 'out', force: true},
+                { from: path.join('..','out','data_positions.json'), to: 'out', force: true},
+                { from: path.join('..','out','data_mst.json'), to: 'out', force: true},
                 // { from: path.join('src', 'satellite.glb'), to: 'models', force: true}
             ]
         }),

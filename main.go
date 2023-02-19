@@ -57,8 +57,10 @@ func main() {
 	//fmt.Println(graph.PrintMSTSorted())
 	// This method is slow TODO: investigate speedup
 	Satellites := satellite.Parser("satellite/SatDB.txt")
-	//satellite.GenerateMST(Satellites)
+	satellite.GenerateMST(Satellites)
 	// do this after the MST so the data is populated
+	satellite.GenerateCzmlPositions(Satellites)
 	satellite.GenerateCzmlPerception(Satellites)
+	satellite.GenerateCzmlMst(Satellites)
 	fmt.Println("DONE")
 }

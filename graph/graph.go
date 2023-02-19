@@ -359,8 +359,8 @@ func PrintMSTSorted() [][3]int {
 }
 
 func (g *CGraph) BuildMSTBoruvka() {
-
-	for g.nrNodes > 1 {
+	var lastNrNodes = 0
+	for g.nrNodes != lastNrNodes {
 		fmt.Println("\n##################### MAIN LOOP #######################")
 		fmt.Println("#######################################################")
 		fmt.Println(g.nrNodes, "nodes in the graph")
@@ -373,6 +373,8 @@ func (g *CGraph) BuildMSTBoruvka() {
 				g.NodeMinEdgeSet(id[1])
 				edge := g.NodeMinEdgeGet(id[1])
 				fmt.Println("node ", id[1], "--> minEdge:", edge)
+			} else {
+				fmt.Println("Min Edge not found, is this a forest or isolated component?")
 			}
 			//#######To do: If no min edge was found, this means isolated component
 			//#######-----REMOVE FROM THE GRAPH-----
@@ -417,5 +419,6 @@ func (g *CGraph) BuildMSTBoruvka() {
 				}
 			}
 		}
+		lastNrNodes = g.nrNodes
 	} //end main for loop
 }

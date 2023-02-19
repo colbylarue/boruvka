@@ -3,12 +3,12 @@ package satellite
 import (
 	"boruvka/graph"
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -34,22 +34,62 @@ func (p PairList) Less(i, j int) bool { return p[i].Weight > p[j].Weight }
 // Contains Id, Name, Line 1, Line 2, , MaxEA, LLA, Map of "connected" Sats ids to weights based on distance
 // https://en.wikipedia.org/wiki/Two-line_element_set
 type SimpleSatellite struct {
-	Id            int        `json:"id"`
-	Name          string     `json:"name"`
-	Tle1          string     `json:"-"`
-	Tle2          string     `json:"-"`
-	PosECI        Vector3    `json:"-"`
-	Lla           LatLongAlt `json:"pos"`
-	MaxEA         float64    `json:"-"`
-	PerceivedSats PairList   `json:"percept"`
-	MSTneighbors  PairList   `json:"-"`
+	Id            int
+	Name          string
+	Tle1          string
+	Tle2          string
+	PosECI        Vector3
+	Lla           LatLongAlt
+	MaxEA         float64
+	PerceivedSats PairList
+	MSTneighbors  PairList
 }
 
-// convert to json https://blog.logrocket.com/using-json-go-guide/
-func (s *SimpleSatellite) ToJson() string {
-	bytes, _ := json.MarshalIndent(s, "", "\t")
-	//fmt.Println(string(bytes))
-	return string(bytes)
+func (s *SimpleSatellite) ToString() string {
+	sat := `"id":`
+	sat += strconv.Itoa(s.Id)
+	sat += "," + `"name":"`
+	sat += s.Name
+	sat += `"` + "," + `"pos":{`
+	sat += fmt.Sprintf(`"Lat": %g`, s.Lla.Latitude)
+	sat += ","
+	sat += fmt.Sprintf(`"Lon": %g`, s.Lla.Longitude)
+	sat += ","
+	sat += fmt.Sprintf(`"Alt": %g`, s.Lla.Altitude)
+	sat += "}"
+	return sat
+}
+
+func (s *SimpleSatellite) GetPerception() string {
+	perception := `"percept": [`
+	for i := 0; i < len(s.PerceivedSats); i++ {
+		perception += `{"Id": `
+		perception += strconv.Itoa(s.PerceivedSats[i].Id)
+		perception += `,"Wt": `
+		perception += strconv.Itoa(s.PerceivedSats[i].Weight)
+		perception += "}"
+		if i != len(s.PerceivedSats)-1 {
+			perception += ","
+		}
+	}
+	perception += "]"
+	return perception
+}
+
+func (s *SimpleSatellite) GetMSTneighbors() string {
+	mst := `"mst": [`
+	for i := 0; i < len(s.MSTneighbors); i++ {
+		mst += `{"Id": `
+		mst += strconv.Itoa(s.MSTneighbors[i].Id)
+		mst += `,"Wt": `
+		mst += strconv.Itoa(s.MSTneighbors[i].Weight)
+		mst += "}"
+		if i != len(s.MSTneighbors)-1 {
+			mst += ","
+		}
+	}
+	mst += "]"
+	return mst
 }
 
 // func initSat pulls the TLE data to generate a LLA position and sets the LLA variable.
@@ -65,8 +105,8 @@ func InitSat(s *SimpleSatellite) bool {
 
 	// Test if the orbit degraded and remove the sat from the list if it did
 	// I set the ECI position to (0.0, 0.0, 0.0), i.e. the center of the earth
-	// if the orbit has sufficiently degraded to not be valid or the satellite
-	// has burned up in the atmosphere.
+	// if the orbit has sufficiently degraded to not be a valid prediction
+	// or the satellite has burned up in the atmosphere.
 	if s.PosECI.X == 0.0 && s.PosECI.Y == 0.0 && s.PosECI.Z == 0.0 {
 		return false
 	}
@@ -200,7 +240,9 @@ func GenerateCzmlPositions(list_all_sats []SimpleSatellite) {
 	generatedJSON += `"entities"`
 	generatedJSON += ":["
 	for i := 0; i < len(list_all_sats); i++ {
-		generatedJSON += list_all_sats[i].ToJson()
+		generatedJSON += "{"
+		generatedJSON += list_all_sats[i].ToString()
+		generatedJSON += "}"
 		if i != len(list_all_sats)-1 {
 			generatedJSON += "," // Don't add if it is the last one
 		}
@@ -222,7 +264,11 @@ func GenerateCzmlPerception(list_all_sats []SimpleSatellite) {
 	generatedJSON += `"entities"`
 	generatedJSON += ":["
 	for i := 0; i < len(list_all_sats); i++ {
-		generatedJSON += list_all_sats[i].ToJson()
+		generatedJSON += "{"
+		generatedJSON += list_all_sats[i].ToString()
+		generatedJSON += ","
+		generatedJSON += list_all_sats[i].GetPerception()
+		generatedJSON += "}"
 		if i != len(list_all_sats)-1 {
 			generatedJSON += "," // Don't add if it is the last one
 		}
@@ -230,6 +276,32 @@ func GenerateCzmlPerception(list_all_sats []SimpleSatellite) {
 	generatedJSON += "]}"
 
 	file, err := os.Create("out/data_perception.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	file.WriteString(strings.Join(strings.Fields(generatedJSON), ""))
+}
+
+func GenerateCzmlMst(list_all_sats []SimpleSatellite) {
+
+	generatedJSON := "{"
+	generatedJSON += `"entities"`
+	generatedJSON += ":["
+	for i := 0; i < len(list_all_sats); i++ {
+		generatedJSON += "{"
+		generatedJSON += list_all_sats[i].ToString()
+		generatedJSON += ","
+		generatedJSON += list_all_sats[i].GetMSTneighbors()
+		generatedJSON += "}"
+		if i != len(list_all_sats)-1 {
+			generatedJSON += "," // Don't add if it is the last one
+		}
+	}
+	generatedJSON += "]}"
+
+	file, err := os.Create("out/data_mst.json")
 	if err != nil {
 		fmt.Println(err)
 	}
