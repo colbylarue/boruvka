@@ -93,6 +93,10 @@ func ECIToLLA(eciCoords Vector3, gmst float64) (ret LatLongAlt) {
 	ret.Longitude = longitude
 	ret.Altitude = altitude
 
+	temp := LatLong{Latitude: latitude, Longitude: longitude}
+	ret.Latitude = LatLongDeg(temp).Latitude
+	ret.Longitude = LatLongDeg(temp).Longitude
+
 	return
 }
 
@@ -144,9 +148,9 @@ func LLAToECEF(lat, lon, alt float64) (float64, float64, float64) {
 
 	N := a / math.Sqrt(1-math.Pow(e, 2)*math.Pow(math.Sin(lat), 2))
 
-	x := (N + alt) * math.Cos(lat) * math.Cos(lon) / 1000
-	y := (N + alt) * math.Cos(lat) * math.Sin(lon) / 1000
-	z := ((1-math.Pow(e, 2))*N + alt) * math.Sin(lat) / 1000
+	x := (N + alt) * math.Cos(lat) * math.Cos(lon)
+	y := (N + alt) * math.Cos(lat) * math.Sin(lon)
+	z := ((1-math.Pow(e, 2))*N + alt) * math.Sin(lat)
 
 	return x, y, z
 }

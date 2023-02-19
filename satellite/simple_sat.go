@@ -10,6 +10,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 )
 
 // satellite data generated from https://www.celestrak.com/NORAD/elements/table.php?GROUP=active&FORMAT=tle
@@ -26,7 +27,7 @@ type PairList []Pair
 
 func (p PairList) Len() int           { return len(p) }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-func (p PairList) Less(i, j int) bool { return p[i].Weight < p[j].Weight }
+func (p PairList) Less(i, j int) bool { return p[i].Weight > p[j].Weight }
 
 // type SimpleSatellite struct
 // SimpleSatellite is intended to abstract away all of the Satellite orbital calculations.
@@ -37,15 +38,11 @@ type SimpleSatellite struct {
 	Name          string     `json:"name"`
 	Tle1          string     `json:"-"`
 	Tle2          string     `json:"-"`
-	Lla           LatLongAlt `json:"position"`
+	PosECI        Vector3    `json:"-"`
+	Lla           LatLongAlt `json:"pos"`
 	MaxEA         float64    `json:"-"`
-	PerceivedSats PairList   `json:"perception"`
-	MSTneighbors  PairList   `json:"mst"`
-}
-
-//lint:ignore U1000 Ignore unused function
-func (s *SimpleSatellite) ToString() [3]string {
-	return [3]string{s.Name, s.Tle1, s.Tle2}
+	PerceivedSats PairList   `json:"percept"`
+	MSTneighbors  PairList   `json:"-"`
 }
 
 // convert to json https://blog.logrocket.com/using-json-go-guide/
@@ -58,15 +55,27 @@ func (s *SimpleSatellite) ToJson() string {
 // func initSat pulls the TLE data to generate a LLA position and sets the LLA variable.
 // Must be called to populate data
 // http://celestrak.org/columns/v02n03/
-func InitSat(s *SimpleSatellite) {
-	s.Id = counter
-	counter = counter + 1
+func InitSat(s *SimpleSatellite) bool {
 	s.PerceivedSats = make(PairList, 0)
 	temp_sat := TLEToSat(s.Tle1, s.Tle2, GravityWGS84)
-	pos, _ := Propagate(temp_sat, 2022, 6, 1, 0, 0, 0) //units are km
-	s.Lla = ECIToLLA(pos, GSTimeFromDate(2022, 1, 1, 0, 0, 0))
+	pos, _ := Propagate(temp_sat, 2023, 3, 19, 0, 0, 0) //units are km
+	s.PosECI.X = pos.X
+	s.PosECI.Y = pos.Y
+	s.PosECI.Z = pos.Z
+
+	// Test if the orbit degraded and remove the sat from the list if it did
+	// I set the ECI position to (0.0, 0.0, 0.0), i.e. the center of the earth
+	// if the orbit has sufficiently degraded to not be valid or the satellite
+	// has burned up in the atmosphere.
+	if s.PosECI.X == 0.0 && s.PosECI.Y == 0.0 && s.PosECI.Z == 0.0 {
+		return false
+	}
+	s.Id = counter
+	counter = counter + 1
+	s.Lla = ECIToLLA(pos, GSTimeFromDate(2023, 2, 19, 0, 0, 0))
 
 	s.MaxEA = CalculateMaxEA(s)
+	return true
 }
 
 func CalculateMaxEA(s *SimpleSatellite) float64 {
@@ -119,19 +128,18 @@ func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 		if list_all_sats[i].Name == s.Name {
 			continue
 		}
-		var d_m = CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla)
-		var eo = CalculateEarthOcclusion(list_all_sats[i].Lla, s.Lla)
-		fmt.Println(eo)
+		var d_km = CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla)
 		// satellites can really only communicate out a certain distance
-		if math.Round(math.Abs(d_m)) >= 10000 {
-			continue
+		if math.Round(math.Abs(d_km)) <= 900 {
+			s.PerceivedSats = append(s.PerceivedSats, Pair{list_all_sats[i].Id, int(math.Round(d_km))})
 		}
 
-		// is earth blocking view? if d_m == -1 then the earth is not occluding the region
-		if d_m < 0 {
-
-			s.PerceivedSats = append(s.PerceivedSats, Pair{i, int(math.Round(d_m))})
-		}
+		// is earth blocking view? if eo is true then the earth is occluding the region
+		//var eo = CalculateEarthOcclusion(list_all_sats[i].PosECI, s.PosECI)
+		////fmt.Println(eo)
+		//if !eo {
+		//	s.PerceivedSats = append(s.PerceivedSats, Pair{list_all_sats[i].Id, int(math.Round(d_km))})
+		//}
 	}
 
 	sort.Sort(s.PerceivedSats)
@@ -166,27 +174,27 @@ func Parser(filepath string) []SimpleSatellite {
 			sat = SimpleSatellite{Name: sat.Name, Tle1: strings.TrimSpace(s)}
 		} else if linecounter == 2 { // this line is Line 2 of Orbit info && also final line of data, ready to append
 			sat = SimpleSatellite{Name: sat.Name, Tle1: sat.Tle1, Tle2: strings.TrimSpace(s)}
-			satlist = append(satlist, sat)
-			//satG.AddNode() //need to pass name in here
+			// Initialize satellite, if valid add to list
+			if InitSat(&sat) {
+				satlist = append(satlist, sat)
+			}
 			linecounter = -1
 			sat = SimpleSatellite{}
 		}
 		linecounter++
 	}
-
-	// init all satellites
-	for n := range satlist {
-		InitSat(&satlist[n])
-	}
+	var m sync.Mutex
 
 	// perform discovery
 	for n := range satlist {
+		m.Lock()
 		satlist[n].Discovery(satlist)
+		m.Unlock()
 	}
 	return satlist
 }
 
-func GenerateCzml(list_all_sats []SimpleSatellite) {
+func GenerateCzmlPositions(list_all_sats []SimpleSatellite) {
 
 	generatedJSON := "{"
 	generatedJSON += `"entities"`
@@ -199,7 +207,29 @@ func GenerateCzml(list_all_sats []SimpleSatellite) {
 	}
 	generatedJSON += "]}"
 
-	file, err := os.Create("out/data.json")
+	file, err := os.Create("out/data_positions.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	file.WriteString(strings.Join(strings.Fields(generatedJSON), ""))
+}
+
+func GenerateCzmlPerception(list_all_sats []SimpleSatellite) {
+
+	generatedJSON := "{"
+	generatedJSON += `"entities"`
+	generatedJSON += ":["
+	for i := 0; i < len(list_all_sats); i++ {
+		generatedJSON += list_all_sats[i].ToJson()
+		if i != len(list_all_sats)-1 {
+			generatedJSON += "," // Don't add if it is the last one
+		}
+	}
+	generatedJSON += "]}"
+
+	file, err := os.Create("out/data_perception.json")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -228,7 +258,7 @@ func ConvertToCGraph(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 		//iterate neighbors to add edges and weights
 		for key, element := range list_all_sats[sat].PerceivedSats {
 			fmt.Println("Key:", key, "=>", "Element:", element)
-			other_sat := key
+			other_sat := element.Id
 			// Need to check before adding edge to make sure it doesn't alread exist
 			// I think it will overwrite it anyway
 			g.AddEdgeBoth(this_sat.Id, list_all_sats[other_sat].Id, element.Weight)

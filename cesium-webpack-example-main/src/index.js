@@ -15,7 +15,7 @@ function readTextFile(file, callback) {
 }
 var data;
 //usage:
-readTextFile("out/data.json", function (text) {
+readTextFile("out/data_perception.json", function (text) {
   data = JSON.parse(text);
   console.log(data);
   // Your access token can be found at: https://cesium.com/ion/tokens.
@@ -24,7 +24,7 @@ readTextFile("out/data.json", function (text) {
 
   // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
   const viewer = new Viewer('cesiumContainer', {
-    infoBox: false,
+    infoBox: true,
     terrainProvider: createWorldTerrain()
   });
 
@@ -41,12 +41,12 @@ readTextFile("out/data.json", function (text) {
   var roll = 0;
 
   for (var i = 0; i < data.entities.length; i++) {
-    console.log(data.entities[i].name);
+    //console.log(data.entities[i].name);
 
     var pos = Cartesian3.fromDegrees(
-      data.entities[i].position.Longitude * 180 / Math.PI,
-      data.entities[i].position.Latitude * 180 / Math.PI,
-      data.entities[i].position.Altitude * 1000 //kilometers to meters 
+      data.entities[i].pos.Longitude,
+      data.entities[i].pos.Latitude,
+      data.entities[i].pos.Altitude * 1000 //kilometers to meters 
     );
 
     var hpr = new HeadingPitchRoll(heading, pitch, roll);
@@ -56,6 +56,7 @@ readTextFile("out/data.json", function (text) {
     );
 
     viewer.entities.add({
+      id: data.entities[i].id,
       name: data.entities[i].name,
       position: pos,
       point: {
@@ -63,27 +64,28 @@ readTextFile("out/data.json", function (text) {
         pixelSize: 5
       }
     });
-
+  }
+  for (var i = 0; i < data.entities.length; i++) {
     // get only the first 8 connected sats for optimization reasons
     // this should be a sorted list by value of distance. 
-    var max = data.entities[i].perception.length;
-    //if (max > 8) {
-    //  max = 8;
+    var max = data.entities[i].percept.length;
+    //if (max > 20) {
+    //  max = 20;
     //}
     for (var j = 0; j < max; j++) {
       //console.log(data.entities[i].perception[j]["Id"] + " -> " + //data.entities[i].perception[j]["Weight"])
-      var other_id = data.entities[i].perception[j]["Id"]
+      var other_id = data.entities[i].percept[j]["Id"]
       const greenLine = viewer.entities.add({
         name:
-          data.entities[i].name + " To " + data.entities[other_id].name,
+          data.entities[i].name + " <---> " + data.entities[other_id].name + ": dist=" + data.entities[i].percept[j]["Weight"],
         polyline: {
           positions: Cartesian3.fromDegreesArrayHeights([
-            data.entities[other_id].position.Longitude * 180 / Math.PI,
-            data.entities[other_id].position.Latitude * 180 / Math.PI,
-            data.entities[other_id].position.Altitude * 1000, //kilometers to meters 
-            data.entities[i].position.Longitude * 180 / Math.PI,
-            data.entities[i].position.Latitude * 180 / Math.PI,
-            data.entities[i].position.Altitude * 1000 //kilometers to //meters ,
+            data.entities[other_id].pos.Longitude,
+            data.entities[other_id].pos.Latitude,
+            data.entities[other_id].pos.Altitude * 1000, //kilometers to meters 
+            data.entities[i].pos.Longitude,
+            data.entities[i].pos.Latitude,
+            data.entities[i].pos.Altitude * 1000 //kilometers to //meters ,
           ]),
           width: 1,
           arcType: ArcType.NONE,
@@ -93,10 +95,10 @@ readTextFile("out/data.json", function (text) {
         },
       });
     }
-    if ( data.entities[i].mst == null ){
-      continue
-    }
-    var max = data.entities[i].mst.length;
+    // if ( data.entities[i].mst == null ){
+    //   continue
+    // }
+    /* var max = data.entities[i].mst.length;
     for (var j = 0; j < max; j++) {
       //console.log(mstdata.entities[i].mst[j]["Id"] + " -> " + mstdata.entities[i].mst[j]["Weight"])
       var other_id = data.entities[i].mst[j]["Id"]
@@ -105,12 +107,12 @@ readTextFile("out/data.json", function (text) {
         data.entities[i].name + " To " + data.entities[other_id].name,
         polyline: {
           positions: Cartesian3.fromDegreesArrayHeights([
-            data.entities[other_id].position.Longitude * 180 / Math.PI,
-            data.entities[other_id].position.Latitude * 180 / Math.PI,
-            data.entities[other_id].position.Altitude * 1000, //kilometers to meters 
-            data.entities[i].position.Longitude * 180 / Math.PI,
-            data.entities[i].position.Latitude * 180 / Math.PI,
-            data.entities[i].position.Altitude * 1000 //kilometers to meters ,
+            data.entities[other_id].pos.Longitude * 180 / Math.PI,
+            data.entities[other_id].pos.Latitude * 180 / Math.PI,
+            data.entities[other_id].pos.Altitude * 1000, //kilometers to meters 
+            data.entities[i].pos.Longitude * 180 / Math.PI,
+            data.entities[i].pos.Latitude * 180 / Math.PI,
+            data.entities[i].pos.Altitude * 1000 //kilometers to meters ,
           ]),
           width: 1,
           arcType: ArcType.NONE,
@@ -119,6 +121,6 @@ readTextFile("out/data.json", function (text) {
           })
         },
       });
-    }
-  }
+    } */
+  } 
 });

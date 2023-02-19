@@ -118,28 +118,41 @@ func parseInt(strIn string) (ret int64) {
 	return ret
 }
 
-func CalculateEarthOcclusion(p1, p2 LatLongAlt) float64 {
-	wgs84a := 6378137.0
-	//wgs84b := 6378137.0
-	//wgs84c := 6356752.314245
-	//convert to ecef:
-	diffLat := p2.Latitude - p1.Latitude
-	diffLon := p2.Longitude - p1.Longitude
+func CalculateEarthOcclusion(p1, p2 Vector3) bool {
+	// Determine if a line segment defined by P1(x,y,z) and P2(x,y,z)
+	// passes through the sphere defined by P3(0,0,0) and radius R
+	// returns true if line intersects the sphere at least one point
+	// returns false if the line does not intersect the sphere
+	p3 := Vector3{0.0, 0.0, 0.0}
+	radius := 6378137.0
+	// calculate intermediate terms
+	a_term := math.Pow((p2.X-p1.X), 2) + math.Pow((p2.Y-p1.Y), 2) + math.Pow((p2.Z-p1.Z), 2)
+	b_term := 2.0 * ((p2.X-p1.X)*(p1.X-p3.X) + (p2.Y-p1.Y)*(p1.Y-p3.Y) + (p2.Z-p1.Z)*(p1.Z-p3.Z))
+	c_term := (math.Pow(p3.X, 2) + math.Pow(p3.Y, 2) + math.Pow(p3.Z, 2) +
+		math.Pow(p1.X, 2) + math.Pow(p1.Y, 2) + math.Pow(p1.Z, 2) -
+		2.0*(p3.X*p1.X+p3.Y*p1.Y+p3.Z*p1.Z) - radius*radius)
 
-	a := math.Pow(math.Sin(diffLat/2), 2) + math.Cos(p1.Latitude)*math.Cos(p2.Latitude)*
-		math.Pow(math.Sin(diffLon/2), 2)
+	discriminant := b_term*b_term - 4.0*a_term*c_term
 
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	if discriminant < 0.0 || a_term == 0 {
+		// prevent divide by zero on a_term
+		// the line (infinite in both directions) does not intersect the sphere
+		return false
+	}
 
-	km := c * wgs84a
-
-	return km
+	if ((-b_term+math.Sqrt(discriminant))/(2.0*a_term) <= 1.0 &&
+		(-b_term+math.Sqrt(discriminant))/(2.0*a_term) >= 0.0) ||
+		((-b_term-math.Sqrt(discriminant))/(2.0*a_term) <= 1.0 &&
+			(-b_term-math.Sqrt(discriminant))/(2.0*a_term) >= 0.0) {
+		return true
+	}
+	return false
 }
 
 func CalculateDistanceFromTwoLLA(p1, p2 LatLongAlt) float64 {
-	x, y, z := LLAToECEF(p1.Latitude, p1.Longitude, p1.Altitude)
-	a, b, c := LLAToECEF(p2.Latitude, p2.Longitude, p2.Altitude)
+	x, y, z := LLAToECEF(p1.Latitude*DEG2RAD, p1.Longitude*DEG2RAD, p1.Altitude)
+	a, b, c := LLAToECEF(p2.Latitude*DEG2RAD, p2.Longitude*DEG2RAD, p2.Altitude)
 	var calc = math.Pow((a-x), 2.0) + math.Pow((b-y), 2.0) + math.Pow((c-z), 2.0)
 	var dist = math.Sqrt(math.Abs(calc))
-	return dist / 1000
+	return dist / 1000 // km
 }

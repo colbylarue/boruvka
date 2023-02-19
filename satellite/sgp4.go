@@ -520,6 +520,9 @@ func sgp4(satrec *Satellite, tsince float64) (position, velocity Vector3) {
 	if mrt < 1.0 {
 		satrec.Error = 6
 		satrec.ErrorStr = ("mrt is less than 1.0 indicating the satellite has decayed")
+		position.X = 0.0
+		position.Y = 0.0
+		position.Z = 0.0
 	}
 
 	return

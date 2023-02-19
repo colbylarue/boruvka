@@ -17,8 +17,36 @@ func TestSimpleSatellite(t *testing.T) {
 	})
 }
 
+func TestECIToLLA(t *testing.T) {
+	t.Run("ECI to LLA test", func(t *testing.T) {
+		var pos = Vector3{X: 0, Y: 0, Z: 0}
+		var pos1 = Vector3{X: -6070000, Y: -1280000, Z: 660000}
+		var new_pos = ECIToLLA(pos, GSTimeFromDate(2022, 1, 1, 0, 0, 0))
+		var new_pos1 = ECIToLLA(pos1, GSTimeFromDate(2010, 1, 17, 10, 20, 36))
+
+		if new_pos.Latitude != 0.0 {
+			t.Errorf("Expected lat to be 0; but got %f", new_pos.Latitude)
+		}
+		if new_pos.Longitude != -100.63004894472304 {
+			t.Errorf("Expected lon to be -100.630049; but got %f", new_pos.Longitude)
+		}
+		if new_pos.Altitude != -6378.137 {
+			t.Errorf("Expected alt to be -6378.137; but got %f", new_pos.Altitude)
+		}
+		if new_pos1.Latitude != 6.072992234351723 {
+			t.Errorf("Expected lat to be 6.072992234351723; but got %f", new_pos.Latitude)
+		}
+		if new_pos1.Longitude != -79.97508687282334 {
+			t.Errorf("Expected lon to be -79.97508687282334; but got %f", new_pos.Longitude)
+		}
+		if new_pos1.Altitude != 6232123.524570515 {
+			t.Errorf("Expected alt to be 6232123.524570515; but got %f", new_pos.Altitude)
+		}
+	})
+}
+
 func TestLLAtoECEF(t *testing.T) {
-	t.Run("Earth Occlusion Test", func(t *testing.T) {
+	t.Run("LLA 2 ECEF Test", func(t *testing.T) {
 		lla1 := LatLongAlt{Latitude: 0, Longitude: 0, Altitude: 0}
 		lla2 := LatLongAlt{Latitude: 1, Longitude: 1, Altitude: 500}
 
@@ -26,8 +54,8 @@ func TestLLAtoECEF(t *testing.T) {
 
 		var a, b, c = LLAToECEF(lla2.Latitude*DEG2RAD, lla2.Longitude*DEG2RAD, lla2.Altitude)
 
-		if x != 6378.137 {
-			t.Errorf("Expected x to be 6378.63; but got %f", x)
+		if x != 6378137.00 {
+			t.Errorf("Expected x to be 6378137.00m; but got %f", x)
 		}
 		if y != 0.0 {
 			t.Errorf("Expected y to be 0; but got %f", y)
@@ -35,14 +63,40 @@ func TestLLAtoECEF(t *testing.T) {
 		if z != 0.0 {
 			t.Errorf("Expected z to be 0; but got %f", z)
 		}
-		if a != 6376.7006539387885 {
-			t.Errorf("Expected x to be 6378.63; but got %f", a)
+		if a != 6376700.6539387885 {
+			t.Errorf("Expected x to be 6376700.6539387885m; but got %f", a)
 		}
-		if b != 111.30572394230909 {
-			t.Errorf("Expected y to be 0; but got %f", b)
+		if b != 111305.72394230908 {
+			t.Errorf("Expected y to be 111km; but got %f", b)
 		}
-		if c != 110.57750102778527 {
-			t.Errorf("Expected z to be 0; but got %f", c)
+		if c != 110577.50102778527 {
+			t.Errorf("Expected z to be 111km; but got %f", c)
+		}
+	})
+}
+
+func TestCalculateDistanceFromTwoLLA(t *testing.T) {
+	t.Run("LLA 2 ECEF Test", func(t *testing.T) {
+		lla1 := LatLongAlt{Latitude: 0, Longitude: 0, Altitude: 0}
+		lla2 := LatLongAlt{Latitude: 1, Longitude: 1, Altitude: 0}
+
+		var d_m = CalculateDistanceFromTwoLLA(lla1, lla2)
+
+		if d_m != 156.8955857061789 {
+			t.Errorf("Expected x to be 156.895586m; but got %f", d_m)
+		}
+	})
+}
+
+func TestCalculateEarthOcclusion(t *testing.T) {
+	t.Run("LLA 2 ECEF Test", func(t *testing.T) {
+		lla1 := LatLongAlt{Latitude: 0, Longitude: 0, Altitude: 0}
+		lla2 := LatLongAlt{Latitude: 1, Longitude: 1, Altitude: 0}
+
+		var d_m = CalculateDistanceFromTwoLLA(lla1, lla2)
+
+		if d_m != 156.8955857061789 {
+			t.Errorf("Expected x to be 156.895586m; but got %f", d_m)
 		}
 	})
 }
