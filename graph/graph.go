@@ -359,7 +359,7 @@ func PrintMSTSorted() [][3]int {
 }
 
 func (g *CGraph) BuildMSTBoruvka() {
-	var lastNrNodes = 0
+	var lastNrNodes = -1
 	for g.nrNodes != lastNrNodes {
 		fmt.Println("\n##################### MAIN LOOP #######################")
 		fmt.Println("#######################################################")

@@ -25,9 +25,10 @@ type Pair struct {
 
 type PairList []Pair
 
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-func (p PairList) Less(i, j int) bool { return p[i].Weight > p[j].Weight }
+func (p PairList) Len() int              { return len(p) }
+func (p PairList) Swap(i, j int)         { p[i], p[j] = p[j], p[i] }
+func (p PairList) Less(i, j int) bool    { return p[i].Weight < p[j].Weight }
+func (p PairList) Greater(i, j int) bool { return p[i].Weight > p[j].Weight }
 
 // type SimpleSatellite struct
 // SimpleSatellite is intended to abstract away all of the Satellite orbital calculations.
@@ -170,7 +171,7 @@ func (s *SimpleSatellite) Discovery(list_all_sats []SimpleSatellite) {
 		}
 		var d_km = CalculateDistanceFromTwoLLA(list_all_sats[i].Lla, s.Lla)
 		// satellites can really only communicate out a certain distance
-		if math.Round(math.Abs(d_km)) <= 900 {
+		if math.Round(math.Abs(d_km)) <= 1500 {
 			s.PerceivedSats = append(s.PerceivedSats, Pair{list_all_sats[i].Id, int(math.Round(d_km))})
 		}
 
