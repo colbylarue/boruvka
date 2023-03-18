@@ -242,7 +242,7 @@ func OnlyOnceInSlice(p int, sli [][2]int) bool {
 			counter++
 		}
 	}
-	fmt.Println("OnlyOnceInSlice: counter =", counter)
+	//fmt.Println("OnlyOnceInSlice: counter =", counter)
 	if counter == 1 {
 		return true
 	} else {
@@ -251,21 +251,21 @@ func OnlyOnceInSlice(p int, sli [][2]int) bool {
 }
 
 func (g *CGraph) BuildContractionPairsSlice() {
-	fmt.Println("\tBuilding ContractionPairsSlice:")
+	//fmt.Println("\tBuilding ContractionPairsSlice:")
 	//Since Go is garbage-collected, there is no memory leak here!
-	ContractionPairsSlice = make([][2]int, 0)
+	ContractionPairsSlice = make([][2]int, 0) //Reset this global slice
 	for i, n := range g.nodes {
 		if n.id >= 0 {
 			edge := g.nodes[i].minEdge
 			if edge[0] == -1 {
-				fmt.Println("node", i, " has no minimum edge!")
+				//fmt.Println("node", i, " has no minimum edge!")
 			} else {
 				c1, c2 := edge[0], edge[1]
-				fmt.Println("Adding edge", c1, "-", c2, "to Tree")
-				Tree[[2]int{c1, c2}] = g.nodes[c1].edges[[2]int{c1, c2}]
-				//Avoiding duplicated edges in ContractionPairs
+				//Avoiding duplicated edges in Tree and ContractionPairs
 				if PairNotInSlice([2]int{c1, c2}, ContractionPairsSlice) {
-					fmt.Println("Adding edge", c1, "-", c2, "to ContractionPairsSlice")
+					//fmt.Println("Adding edge", c1, "-", c2, "to Tree")
+					Tree[[2]int{c1, c2}] = g.nodes[c1].edges[[2]int{c1, c2}]
+					//fmt.Println("Adding edge", c1, "-", c2, "to ContractionPairsSlice")
 					ContractionPairsSlice = append(ContractionPairsSlice, [2]int{c1, c2})
 				}
 			}
@@ -273,7 +273,7 @@ func (g *CGraph) BuildContractionPairsSlice() {
 	}
 }
 
-//Retuens the true length of the slice (ignoring -1 markers)
+//Returns the true length of the slice (ignoring -1 markers)
 func LenContractionPairsSlice() int {
 	count := 0
 	for _, v := range ContractionPairsSlice {
@@ -287,11 +287,11 @@ func LenContractionPairsSlice() int {
 //Node/component v0 is contracted assimilated into v1
 
 func (g *CGraph) EdgeContract(v0, v1 int) {
-	fmt.Println("\n############## EdgeContract:", v0, "into", v1)
+	//fmt.Println("\n############## EdgeContract:", v0, "into", v1)
 
 	//Deleting the edge from both components
 	sortedv0, sortedv1 := min(v0, v1), max(v0, v1)
-	fmt.Println("Deleting both edges between", sortedv0, "-", sortedv1)
+	//fmt.Println("Deleting both edges between", sortedv0, "-", sortedv1)
 	delete(g.nodes[v0].edges, [2]int{sortedv0, sortedv1})
 	delete(g.nodes[v1].edges, [2]int{sortedv0, sortedv1})
 
@@ -299,14 +299,14 @@ func (g *CGraph) EdgeContract(v0, v1 int) {
 	g.nodes[v0].minEdge = [5]int{-1, -1, -1, -1, -1}
 
 	//rename all occurences of v0 (in the map of edges of v0's neighbors) to v1
-	fmt.Println("initial edges from v0:     ", g.EdgesFromNode(v0))
+	//fmt.Println("initial edges from v0:     ", g.EdgesFromNode(v0))
 
 	//#### Idea for later: To reduce writing conflicts, the edges with v0
 	//renamed may not be written to v1's map of edges immediately, but stored
 	//for now in temporary map
 	//c2EdgesMap := make(map[[2]int][3]int)
 	for k, v := range g.nodes[v0].edges { //finding all neighbors of v0
-		fmt.Println("\nProcessing neighbor edge: k=", k, "v=", v)
+		//fmt.Println("\nProcessing neighbor edge: k=", k, "v=", v)
 		//First a bit of logic to identify the neighbor:
 		neigId := -1
 		if k[0] == v0 {
@@ -332,7 +332,7 @@ func (g *CGraph) EdgeContract(v0, v1 int) {
 			g.nodes[v1].edges[directKey] = v
 		}
 	}
-	fmt.Println("left over edges should be empty: ", g.EdgesFromNode(v0))
+	//fmt.Println("left over edges should be empty: ", g.EdgesFromNode(v0))
 	//Set id = -1 in the CGraphNode structure for v0
 	g.nodes[v0].id = -1 //actually deleting would be better, but it's an array
 	g.DecNrNodes()
@@ -359,33 +359,40 @@ func PrintMSTSorted() [][3]int {
 }
 
 func (g *CGraph) BuildMSTBoruvka() {
-	var lastNrNodes = -1
-	for g.nrNodes != lastNrNodes {
-		fmt.Println("\n##################### MAIN LOOP #######################")
-		fmt.Println("#######################################################")
-		fmt.Println(g.nrNodes, "nodes in the graph")
 
-		//Calculating the minimum edges for each node in the graph
-		fmt.Println("\tMin edge for each node:")
+	//var lastNrNodes = -1
 
-		for _, id := range g.Nodes() {
-			if id[1] >= 0 {
-				g.NodeMinEdgeSet(id[1])
-				edge := g.NodeMinEdgeGet(id[1])
-				fmt.Println("node ", id[1], "--> minEdge:", edge)
+	for g.nrNodes > 1 {
+		//fmt.Println("\n##################### MAIN LOOP #######################")
+		//fmt.Println("#######################################################")
+		//fmt.Println(g.nrNodes, "nodes in the graph")
+		//g.Snapshot()
+		// Calculating the minimum edges for each node in the graph
+		//fmt.Println("\tMin edge for each node:")
+
+		for _, node := range g.Nodes() {
+			if node[1] >= 0 {
+				g.NodeMinEdgeSet(node[1])
+				//edge := g.NodeMinEdgeGet(node[1])
+				//fmt.Println("node ", node[1], "--> minEdge:", edge)
 			} else {
-				fmt.Println("Min Edge not found, is this a forest or isolated component?")
+				// fmt.Println("Min Edge not found, is this a forest or isolated component?")
 			}
 			//#######To do: If no min edge was found, this means isolated component
 			//#######-----REMOVE FROM THE GRAPH-----
+
 		}
+
 		//Edge Contraction is a multi-step process. It starts with a first pass
 		//that adds all minEdges to the Tree and fills up ContractionPairsSlice
 		g.BuildContractionPairsSlice()
-
-		fmt.Println("ContractionPairsSlice:", ContractionPairsSlice)
-
+		//fmt.Println("ContractionPairsSlice:", ContractionPairsSlice)
 		//PrintMSTSorted()
+		if LenContractionPairsSlice() == 0 { //All connected components have been fully contracted
+			//fmt.Println("All connected components have been fully contracted")
+			//fmt.Printf("The graph has %d connected components - ### EXITING THE MAIN LOOP ###", g.nrNodes)
+			break
+		}
 
 		//This is a process equivalent to Pointer-jumping. We create a slice
 		//of leaves (terminal nodes) in leafSlice, and contract those
@@ -398,7 +405,7 @@ func (g *CGraph) BuildMSTBoruvka() {
 			//ContractionPairsSlice. Unlike ContractionPairsSlice, leafSlice is
 			//ordered: The first node will be contracted in the second.
 			for i, v := range ContractionPairsSlice {
-				fmt.Println("i = ", i, "; v = ", v)
+				//fmt.Println("i = ", i, "; v = ", v)
 				//#### Optimization: count v[0] and v[1] in the same loop, then
 				//examine the counters and decide.
 				if OnlyOnceInSlice(v[0], ContractionPairsSlice) {
@@ -408,17 +415,16 @@ func (g *CGraph) BuildMSTBoruvka() {
 				} //else do nothing - if they both appear more than once, it's not a leaf edge
 			}
 
-			fmt.Println("\n############### leafSlice ################\n", leafSlice)
+			//fmt.Println("\n############### leafSlice ################\n", leafSlice)
 			//Perform a round of leaf contractions according to leafSlice
 			if len(leafSlice) > 0 {
 				for _, v := range leafSlice {
 					g.EdgeContract(v[0], v[1])
-					fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAllMap())
+					//fmt.Println("nodes:", g.Nodes(), "\nedges:", g.EdgesAllMap())
 					//Delete the pair from ContractionPairs
 					ContractionPairsSlice[v[2]] = [2]int{-1, -1}
 				}
 			}
 		}
-		lastNrNodes = g.nrNodes
 	} //end main for loop
 }

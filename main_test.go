@@ -2,10 +2,11 @@ package main
 
 import (
 	"boruvka/graph"
+	"boruvka/satellite"
 	"testing"
 )
 
-func TestAdd(t *testing.T) {
+func TestGraph(t *testing.T) {
 
 	// TODO: add test -> examples in repo below:
 	// https://github.com/networkx/networkx/blob/main/networkx/classes/tests/test_graph.py
@@ -19,4 +20,13 @@ func TestAdd(t *testing.T) {
 		}
 	})
 
+	t.Run("Build Satellite Graph Test", func(t *testing.T) {
+		Satellites := satellite.Parser("satellite/SatDB.txt")
+		g := satellite.GenerateMST(Satellites)
+		expected := 3520
+
+		if expected != g.GetNrNodes() {
+			t.Errorf("Expected %d; but got %d", expected, g.GetNrNodes())
+		}
+	})
 }

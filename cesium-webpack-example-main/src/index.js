@@ -66,9 +66,6 @@ readTextFile("out/data_perception.json", function (text) {
     });
   }
   for (var i = 0; i < data.entities.length; i++) {
-    // get only the first 8 connected sats for optimization reasons
-    // this should be a sorted list by value of distance. 
-
     var max = data.entities[i].percept.length;
     //if (max > 20) {
     //  max = 20;

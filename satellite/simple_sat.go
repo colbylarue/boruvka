@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 // satellite data generated from https://www.celestrak.com/NORAD/elements/table.php?GROUP=active&FORMAT=tle
@@ -41,7 +42,6 @@ type SimpleSatellite struct {
 	Tle2          string
 	PosECI        Vector3
 	Lla           LatLongAlt
-	MaxEA         float64
 	PerceivedSats PairList
 	MSTneighbors  PairList
 }
@@ -115,50 +115,7 @@ func InitSat(s *SimpleSatellite) bool {
 	counter = counter + 1
 	s.Lla = ECIToLLA(pos, GSTimeFromDate(2023, 2, 19, 0, 0, 0))
 
-	s.MaxEA = CalculateMaxEA(s)
 	return true
-}
-
-func CalculateMaxEA(s *SimpleSatellite) float64 {
-	// equitorial radius (meters)
-	RADIUS_EARTH_METERS := 6378137.0
-	groundRadius := RADIUS_EARTH_METERS
-	maxAngleAcos := groundRadius / (groundRadius + s.Lla.Altitude)
-	maxEA := math.Acos(maxAngleAcos) * RAD2DEG
-	return maxEA
-}
-
-//latlons in radians
-func CalculateEA(lat1, lon1, lat2, lon2 float64) float64 {
-	ea := (math.Cos(lat1) * math.Cos(lat2) * math.Cos(lon2-lon1)) + math.Sin(lat1)*math.Sin(lat2)
-
-	if ea > 1.0 {
-		ea = 1.0
-	}
-	if ea < -1.0 {
-		ea = -1.0
-	}
-	return math.Acos(ea)
-}
-
-// ea is in radians
-func CalculateElevationAngle(earthAngle float64, altitude float64) float64 {
-	ea := math.Sin(earthAngle) /
-		math.Sqrt(1+math.Pow(RADIUS_EARTH_METERS/(altitude+RADIUS_EARTH_METERS), 2)-
-			2*(RADIUS_EARTH_METERS/(altitude+RADIUS_EARTH_METERS)*math.Cos(earthAngle)))
-	if ea > 1.0 {
-		ea = 1.0
-	}
-	if ea < -1.0 {
-		ea = -1.0
-	}
-	var ground_el float64
-	if math.Cos(earthAngle)*(altitude+RADIUS_EARTH_METERS) < RADIUS_EARTH_METERS {
-		ground_el = -math.Acos(ea)
-	} else {
-		ground_el = math.Acos(ea)
-	}
-	return ground_el
 }
 
 //This method has to be called on every satellite against every satellite to determine who can talk
@@ -329,8 +286,8 @@ func ConvertToCGraph(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	for sat := 0; sat < len(list_all_sats); sat++ {
 		this_sat := list_all_sats[sat]
 		//iterate neighbors to add edges and weights
-		for key, element := range list_all_sats[sat].PerceivedSats {
-			fmt.Println("Key:", key, "=>", "Element:", element)
+		for _, element := range list_all_sats[sat].PerceivedSats {
+			//fmt.Println("Key:", key, "=>", "Element:", element)
 			other_sat := element.Id
 			// Need to check before adding edge to make sure it doesn't alread exist
 			// I think it will overwrite it anyway
@@ -343,7 +300,12 @@ func ConvertToCGraph(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 
 func GenerateMST(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	g = ConvertToCGraph(list_all_sats)
+	//graph.BuildDotFromCGraph(g, "test.dot")
+
+	start := time.Now()
 	g.BuildMSTBoruvka()
+	elapsed := time.Since(start)
+	fmt.Println("==elapsed time==", elapsed)
 	fmt.Println("FINAL STEP")
 	var mstGraph = graph.PrintMSTSorted()
 	for i := 0; i < len(mstGraph); i++ {
