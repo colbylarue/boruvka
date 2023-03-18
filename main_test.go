@@ -3,6 +3,9 @@ package main
 import (
 	"boruvka/graph"
 	"boruvka/satellite"
+	"log"
+	"os"
+	"runtime/pprof"
 	"testing"
 )
 
@@ -20,9 +23,22 @@ func TestGraph(t *testing.T) {
 		}
 	})
 
-	t.Run("Build Satellite Graph Test", func(t *testing.T) {
+	t.Run("Build Satellite Graph with Performance Profile Test", func(t *testing.T) {
 		Satellites := satellite.Parser("satellite/SatDB.txt")
+
+		f, err := os.Create("profile.pb")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal(err)
+		}
+
 		g := satellite.GenerateMST(Satellites)
+
+		pprof.StopCPUProfile()
 		expected := 3520
 
 		if expected != g.GetNrNodes() {
