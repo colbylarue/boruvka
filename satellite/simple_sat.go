@@ -189,6 +189,12 @@ func Parser(filepath string) []SimpleSatellite {
 		satlist[n].Discovery(satlist)
 		m.Unlock()
 	}
+	numedges := 0
+	for e := range satlist {
+		p := len(satlist[e].PerceivedSats)
+		numedges += p
+	}
+	fmt.Println("number of edges = ", numedges)
 	return satlist
 }
 
@@ -300,7 +306,7 @@ func ConvertToCGraph(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 
 func GenerateMST(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	g = ConvertToCGraph(list_all_sats)
-	//graph.BuildDotFromCGraph(g, "test.dot")
+	graph.BuildDotFromCGraph(g, "test.dot")
 
 	start := time.Now()
 	g.BuildMSTBoruvka()

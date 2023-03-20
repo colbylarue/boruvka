@@ -75,7 +75,7 @@ readTextFile("out/data_perception.json", function (text) {
       var other_id = data.entities[i].percept[j]["Id"]
       const greenLine = viewer.entities.add({
         name:
-          data.entities[i].name + " <---> " + data.entities[other_id].name + ": dist=" + data.entities[i].percept[j]["Weight"],
+          data.entities[i].name + " <---> " + data.entities[other_id].name + ": dist=" + data.entities[i].percept[j]["Wt"],
         polyline: {
           positions: Cartesian3.fromDegreesArrayHeights([
             data.entities[other_id].pos.Lon,
@@ -85,7 +85,7 @@ readTextFile("out/data_perception.json", function (text) {
             data.entities[i].pos.Lat,
             data.entities[i].pos.Alt * 1000 //kilometers to //meters ,
           ]),
-          width: 1,
+          width: 2,
           arcType: ArcType.NONE,
           material: new PolylineDashMaterialProperty({
             color: Color.GREEN,
@@ -105,7 +105,7 @@ readTextFile("out/data_mst.json", function (text) {
     }
     var max = data.entities[i].mst.length;
     for (var j = 0; j < max; j++) {
-      console.log(data.entities[i].mst[j]["Id"] + " -> " + data.entities[i].mst[j]["Weight"])
+      console.log(data.entities[i].mst[j]["Id"] + " -> " + data.entities[i].mst[j]["Wt"])
       var other_id = data.entities[i].mst[j]["Id"]
       const redLine = viewer.entities.add({
         name:
@@ -119,7 +119,7 @@ readTextFile("out/data_mst.json", function (text) {
             data.entities[i].pos.Lat,
             data.entities[i].pos.Alt * 1000 //kilometers to meters ,
           ]),
-          width: 3,
+          width: 1,
           arcType: ArcType.NONE,
           material: new PolylineDashMaterialProperty({
             color: Color.RED,
