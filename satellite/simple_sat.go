@@ -165,6 +165,7 @@ func Parser(filepath string) []SimpleSatellite {
 	linecounter := 0
 	var sat SimpleSatellite
 	for scanner.Scan() {
+		isDuplicate := false
 		s := scanner.Text()
 		if linecounter == 0 { // this line is the name of the satellite.
 			sat = SimpleSatellite{Name: strings.TrimSpace(s)} // TODO: remove whitespace from name first
@@ -173,7 +174,13 @@ func Parser(filepath string) []SimpleSatellite {
 		} else if linecounter == 2 { // this line is Line 2 of Orbit info && also final line of data, ready to append
 			sat = SimpleSatellite{Name: sat.Name, Tle1: sat.Tle1, Tle2: strings.TrimSpace(s)}
 			// Initialize satellite, if valid add to list
-			if InitSat(&sat) {
+			for n := range satlist {
+				//check if it is a duplicate
+				if sat.Name == satlist[n].Name {
+					isDuplicate = true
+				}
+			}
+			if !isDuplicate && InitSat(&sat) {
 				satlist = append(satlist, sat)
 			}
 			linecounter = -1
@@ -308,8 +315,9 @@ func GenerateMST(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	g = ConvertToCGraph(list_all_sats)
 	graph.BuildDotFromCGraph(g, "test.dot")
 
+	fmt.Println("startingBoruvka")
 	start := time.Now()
-	g.BuildMSTBoruvka()
+	g.BuildMSTBoruvka_Parallel(4)
 	elapsed := time.Since(start)
 	fmt.Println("==elapsed time==", elapsed)
 	fmt.Println("FINAL STEP")

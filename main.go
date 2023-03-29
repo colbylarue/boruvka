@@ -24,10 +24,11 @@
 package main
 
 import (
-	"boruvka/satellite"
+	"boruvka/graph"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func main() {
@@ -42,8 +43,19 @@ func main() {
 		}
 	}
 
+	//nr_reps := 1000
+	//perf_metric_samples := make([]time.Duration, 0, nr_reps) //vs mySlice := make([]int, 0)
+	//for n := 0; n < nr_reps; n++ {
 	//########## Initialize graph ######################
-	//g, gdot := graph.GraphBuilderCsv("data/roadNet-TX.csv", false)
+	g, _ := graph.GraphBuilderCsv("data/roadNet-TX.csv", false)
+
+	start := time.Now()
+	g.BuildMSTBoruvka_Parallel(2)
+	elapsed := time.Since(start)
+	fmt.Println(elapsed)
+	//perf_metric_samples = append(perf_metric_samples, elapsed)
+	//}
+
 	////generate dot file
 	//file, err := os.Create("graph.dot")
 	//if err != nil {
@@ -51,16 +63,16 @@ func main() {
 	//}
 	//defer file.Close()
 	//file.WriteString(gdot.String())
-	//g.BuildMSTBoruvka()
+
 	////Test building Dot from CGraph
 	////new_g := graph.BuildDotFromCGraph(g, "")
 	//fmt.Println(graph.PrintMSTSorted())
 	// This method is slow TODO: investigate speedup
-	Satellites := satellite.Parser("data/SatDB_20.txt")
-	satellite.GenerateMST(Satellites)
+	//Satellites := satellite.Parser("data/SatDB_20.txt")
+	//satellite.GenerateMST(Satellites)
 	// do this after the MST so the data is populated
-	satellite.GenerateCzmlPositions(Satellites)
-	satellite.GenerateCzmlPerception(Satellites)
-	satellite.GenerateCzmlMst(Satellites)
+	//satellite.GenerateCzmlPositions(Satellites)
+	//satellite.GenerateCzmlPerception(Satellites)
+	//satellite.GenerateCzmlMst(Satellites)
 	fmt.Println("DONE")
 }

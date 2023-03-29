@@ -157,7 +157,7 @@ func GraphBuilderCsv(csvFilePath string, buildDot bool) (c *CGraph, d *dot.Graph
 	csvReader := csv.NewReader(f)
 	var numOfNodes int
 	// create map of fields
-	var fieldMap map[string]string
+	//var fieldMap map[string]string
 	var nodes []dot.Node
 	for i := 0; ; i++ {
 		rec, err := csvReader.Read()
@@ -167,17 +167,16 @@ func GraphBuilderCsv(csvFilePath string, buildDot bool) (c *CGraph, d *dot.Graph
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%+v\n", rec)
+		//fmt.Printf("%+v\n", rec)
 
-		// Parse Data
+		// Parse Data Line 0
 		if i == 0 {
 			mystr := rec[0]
-			n, err := strconv.Atoi(mystr)
-			fmt.Println(n)
+			numOfNodes, err := strconv.Atoi(mystr)
+			//fmt.Println(n)
 			if err != nil {
 				log.Fatal(err)
 			}
-			numOfNodes = n
 			//create nodes in graph id starts at 0
 			for i := 0; i < numOfNodes; i++ {
 				g.AddNode()
@@ -203,17 +202,19 @@ func GraphBuilderCsv(csvFilePath string, buildDot bool) (c *CGraph, d *dot.Graph
 				n1, _ := strconv.Atoi(rec[0])
 				n2, _ := strconv.Atoi(rec[1])
 				w, _ := strconv.Atoi(rec[2])
-				g.AddEdgeBoth(n1, n2, w)
+				if n1 < numOfNodes && n2 < numOfNodes {
+					g.AddEdgeBoth(n1, n2, w)
 
-				if buildDot {
-					e1 := dot.NewEdge(&nodes[n1], &nodes[n2])
-					e1.Set("weight", fmt.Sprint(w))
-					e1.Set("label", fmt.Sprint(w))
-					gdot.AddEdge(e1)
+					if buildDot {
+						e1 := dot.NewEdge(&nodes[n1], &nodes[n2])
+						e1.Set("weight", fmt.Sprint(w))
+						e1.Set("label", fmt.Sprint(w))
+						gdot.AddEdge(e1)
+					}
 				}
 			}
 		}
-		fmt.Println(fieldMap)
+		//fmt.Println(fieldMap)
 		i++
 	}
 
