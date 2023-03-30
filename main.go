@@ -26,6 +26,7 @@ package main
 import (
 	"boruvka/graph"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -47,26 +48,27 @@ func main() {
 	//perf_metric_samples := make([]time.Duration, 0, nr_reps) //vs mySlice := make([]int, 0)
 	//for n := 0; n < nr_reps; n++ {
 	//########## Initialize graph ######################
-	g, _ := graph.GraphBuilderCsv("data/roadNet-TX.csv", false)
+	g, gdot := graph.GraphBuilderCsv("data/graph02_12_nodes_no_BOM.csv", true)
 
 	start := time.Now()
-	g.BuildMSTBoruvka_Parallel(2)
+	g.BuildMSTBoruvka_Parallel(1)
 	elapsed := time.Since(start)
 	fmt.Println(elapsed)
 	//perf_metric_samples = append(perf_metric_samples, elapsed)
 	//}
 
 	////generate dot file
-	//file, err := os.Create("graph.dot")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer file.Close()
-	//file.WriteString(gdot.String())
+	file, err := os.Create("graph.dot")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	file.WriteString(gdot.String())
 
 	////Test building Dot from CGraph
 	////new_g := graph.BuildDotFromCGraph(g, "")
-	//fmt.Println(graph.PrintMSTSorted())
+	var mstGraph = graph.PrintMSTSorted()
+	fmt.Println(mstGraph)
 	// This method is slow TODO: investigate speedup
 	//Satellites := satellite.Parser("data/SatDB_20.txt")
 	//satellite.GenerateMST(Satellites)
