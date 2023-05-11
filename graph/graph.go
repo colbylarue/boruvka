@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-	"time"
 )
 
 //Holds the tree edges, in the "2-3" format:
@@ -117,16 +116,6 @@ func (g *CGraph) Nodes() [][2]int {
 		nodes[i] = [2]int{i, g.nodes[i].id}
 	}
 	return nodes
-}
-
-func t_decor(f func(g *CGraph)) func(g *CGraph) {
-	//wrapper function
-	return func(g *CGraph) {
-		start := time.Now()
-		f(g)
-		elapsed := time.Since(start)
-		fmt.Println("==elapsed time==", elapsed)
-	}
 }
 
 //Prints a snapshot of the graph
@@ -317,7 +306,7 @@ func (g *CGraph) BuildContractionPairsSlice() {
 		if n.id >= 0 {
 			edge := g.nodes[i].minEdge
 			if edge[0] == -1 {
-				//fmt.Println("node", i, " has no minimum edge!")
+				fmt.Println("node", i, " has no minimum edge!")
 			} else {
 				c1, c2 := edge[0], edge[1]
 				//Avoiding duplicated edges in Tree and ContractionPairs
@@ -435,7 +424,7 @@ func (g *CGraph) BuildMSTBoruvka() {
 		//fmt.Println("ContractionPairsSlice:", ContractionPairsSlice)
 		//PrintMSTSorted()
 		if LenContractionPairsSlice() == 0 { //All connected components have been fully contracted
-			//fmt.Println("All connected components have been fully contracted")
+			fmt.Println("All connected components have been fully contracted")
 			//fmt.Printf("The graph has %d connected components - ### EXITING THE MAIN LOOP ###", g.nrNodes)
 			break
 		}
