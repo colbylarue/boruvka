@@ -172,16 +172,16 @@ func GraphBuilderCsv(csvFilePath string, buildDot bool) (c *CGraph, d *dot.Graph
 		// Parse Data Line 0
 		if i == 0 {
 			mystr := rec[0]
-			numOfNodes, err := strconv.Atoi(mystr)
+			numOfNodes, err = strconv.Atoi(mystr)
 			//fmt.Println(n)
 			if err != nil {
 				log.Fatal(err)
 			}
 			//create nodes in graph id starts at 0
-			for i := 0; i < numOfNodes; i++ {
+			for j := 0; j < numOfNodes; j++ {
 				g.AddNode()
 				if buildDot {
-					ndot := dot.NewNode(fmt.Sprint(i))
+					ndot := dot.NewNode(fmt.Sprint(j))
 					nodes = append(nodes, *ndot)
 					gdot.AddNode(ndot)
 				}

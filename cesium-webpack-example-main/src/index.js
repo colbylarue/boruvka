@@ -23,7 +23,9 @@ Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1O
 const viewer = new Viewer('cesiumContainer', {
   infoBox: true,
   terrainProvider: createWorldTerrain(),
-  sceneMode : SceneMode.SCENE3D
+  sceneMode : SceneMode.SCENE3D,
+  timeline : false,
+  animation : false
 });
 
 // Add Cesium OSM Buildings, a global 3D buildings layer.
@@ -42,6 +44,7 @@ readTextFile("out/data_perception.json", function (text) {
   var heading = Math.toRadians(0);
   var pitch = 0;
   var roll = 0;
+  var hpr = new HeadingPitchRoll(heading, pitch, roll);
 
   for (var i = 0; i < data.entities.length; i++) {
     //console.log(data.entities[i].name);
@@ -52,41 +55,35 @@ readTextFile("out/data_perception.json", function (text) {
       data.entities[i].pos.Alt * 1000 //kilometers to meters 
     );
 
-    var hpr = new HeadingPitchRoll(heading, pitch, roll);
-    var or = Transforms.headingPitchRollQuaternion(
-      pos,
-      hpr
-    );
-
     var entity = viewer.entities.add({
       position: pos,
-      label: {
-        id: data.entities[i].id + "",
-        text: data.entities[i].id + "",
-        font: '18px sans-serif',
-        fillColor: Color.BLACK,
-        outlineColor: Color.BLACK,
-        outlineWidth: 1.0,
-        pixelOffset: new Cartesian2(0,-16),
-        style: LabelStyle.FILL_AND_OUTLINE,
-        scale : 1
-      },
+      //label: {
+      //  //id: data.entities[i].id + "",
+      //  //text: data.entities[i].id + "",
+      //  //font: '18px sans-serif',
+      //  fillColor: Color.BLACK,
+      //  outlineColor: Color.BLACK,
+      //  outlineWidth: 1.0,
+      //  pixelOffset: new Cartesian2(0,-16),
+      //  style: LabelStyle.FILL_AND_OUTLINE,
+      //  scale : 1
+      //},
       id: data.entities[i].id,
       name: data.entities[i].name,
       point: {
         color: Color.LIGHTSKYBLUE,
-        pixelSize: 10.0
+        pixelSize: 3.0
       }
     });
-    entity.label.show = true;
+    //entity.label.show = true;
   }
 
 
   for (var i = 0; i < data.entities.length; i++) {
     var max = data.entities[i].percept.length;
-    //if (max > 20) {
-    //  max = 20;
-    //}
+    if (max > 0) {
+      max = 0;
+    }
     for (var j = 0; j < max; j++) {
       //console.log(data.entities[i].percept[j]["Id"] + " -> " + //data.entities[i].percept[j]["Weight"])
       var other_id = data.entities[i].percept[j]["Id"];
@@ -99,17 +96,17 @@ readTextFile("out/data_perception.json", function (text) {
 
       var greenLine = viewer.entities.add({
         position: mid,
-        label: {
-          id: data.entities[i].id + "<-->" + data.entities[other_id].id,
-          text: data.entities[i].percept[j]["Wt"] + "", //data.entities[i].percept[j]["Wt"] + "",
-          font: '0.1px sans-serif',
-          fillColor: Color.WHITE,
-          outlineColor: Color.WHITE,
-          outlineWidth: 1.0,
-          pixelOffset: new Cartesian2(-20,-20),
-          style: LabelStyle.FILL_AND_OUTLINE,
-          scale : 100
-        },
+        //label: {
+        //  id: data.entities[i].id + "<-->" + data.entities[other_id].id,
+        //  //text: data.entities[i].percept[j]["Wt"] + "", //data.entities[i].percept[j]["Wt"] + "",
+        //  font: '0.1px sans-serif',
+        //  fillColor: Color.WHITE,
+        //  outlineColor: Color.WHITE,
+        //  outlineWidth: 1.0,
+        //  pixelOffset: new Cartesian2(-20,-20),
+        //  style: LabelStyle.FILL_AND_OUTLINE,
+        //  scale : 100
+        //},
         name:
           data.entities[i].name + " <---> " + data.entities[other_id].name + ": dist=" + data.entities[i].percept[j]["Wt"],
         polyline: {
@@ -121,14 +118,14 @@ readTextFile("out/data_perception.json", function (text) {
             data.entities[i].pos.Lat,
             data.entities[i].pos.Alt * 1000 //kilometers to //meters ,
           ]),
-          width: 2,
+          width: 1,
           arcType: ArcType.NONE,
           material: new PolylineDashMaterialProperty({
             color: Color.GREEN,
           })
         },
       });
-      greenLine.label.show = false;
+      //greenLine.label.show = false;
     }
   }
 });
@@ -150,10 +147,10 @@ readTextFile("out/data_mst.json", function (text) {
           mst_data.entities[i].pos.Lat,
           mst_data.entities[i].pos.Alt * 1000 //kilometers to meters 
         ),
-        label: {
-          id: mst_data.entities[i].id + "<-->" + mst_data.entities[other_id].id,
-          text: "",
-        },
+        //label: {
+        //  id: mst_data.entities[i].id + "<-->" + mst_data.entities[other_id].id,
+        //  text: "",
+        //},
         name: mst_data.entities[i].name + " To " + mst_data.entities[other_id].name,
         polyline: {
           positions: Cartesian3.fromDegreesArrayHeights([
@@ -171,7 +168,7 @@ readTextFile("out/data_mst.json", function (text) {
           })
         },
       });
-      redLine.label.show = true;
+      //redLine.label.show = true;
     }
   }
 });

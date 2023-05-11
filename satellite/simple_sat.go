@@ -313,7 +313,7 @@ func ConvertToCGraph(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 
 func GenerateMST(list_all_sats []SimpleSatellite) (g *graph.CGraph) {
 	g = ConvertToCGraph(list_all_sats)
-	graph.BuildDotFromCGraph(g, "test.dot")
+	//graph.BuildDotFromCGraph(g, "test.dot")
 
 	fmt.Println("startingBoruvka")
 	start := time.Now()
